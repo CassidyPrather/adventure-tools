@@ -1,0 +1,47 @@
+{
+  "$comment": "The screen notices, in menu order. tools/notice_atlas.py draws one card per entry into notice-atlas.png, and the Unity generator builds the menu and animator from this same list. `id` names the menu item; `label` is the text on the card (\n breaks a line); `icon` is a wirenook-assets icon name. Append new notices: a notice's position is its card index and its synced parameter value, so reordering would change what an old menu shows.",
+  "columns": 4,
+  "rows": 2,
+  "notices": [
+    {
+      "id": "Portal",
+      "label": "Portal\ndropping",
+      "icon": "notice-portal"
+    },
+    {
+      "id": "Respawn",
+      "label": "Respawn",
+      "icon": "notice-respawn"
+    },
+    {
+      "id": "Follow me",
+      "label": "Follow\nme",
+      "icon": "catch-up"
+    },
+    {
+      "id": "Wait up",
+      "label": "Wait up",
+      "icon": "info"
+    },
+    {
+      "id": "Regroup",
+      "label": "Regroup",
+      "icon": "teleport-pair"
+    },
+    {
+      "id": "Look here",
+      "label": "Look\nhere",
+      "icon": "laser-pointer"
+    },
+    {
+      "id": "Back soon",
+      "label": "Back\nsoon",
+      "icon": "seat"
+    },
+    {
+      "id": "All clear",
+      "label": "All clear",
+      "icon": "wirenook"
+    }
+  ]
+}

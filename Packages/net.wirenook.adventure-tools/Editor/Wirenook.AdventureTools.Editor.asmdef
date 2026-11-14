@@ -1,0 +1,20 @@
+{
+    "name": "Wirenook.AdventureTools.Editor",
+    "rootNamespace": "Wirenook.AdventureTools.Editor",
+    "references": [
+        "Wirenook.Assets.Runtime",
+        "Wirenook.Assets.Editor",
+        "nadena.dev.modular-avatar.core"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
