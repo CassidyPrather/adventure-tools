@@ -94,12 +94,13 @@ rebuilding.
 
 ### Android and iOS
 
-In a build for Android or iOS (see `net.wirenook.assets`), the laser
-pointer, megaphone and plain flashlight and lantern are kept, with VRChat's
-mobile shaders and without sound. The notices and the Real Light builds are
-left out: mobile avatars may not use a custom shader, and VRChat switches
-their lights off. Their parameters stay, so the avatar syncs the same way
-on every platform.
+In a build for Android or iOS (see `net.wirenook.assets`), every tool is
+kept except the notices, which are drawn by a custom shader that mobile
+avatars may not use. The tools get VRChat's mobile shaders and lose their
+sound, and a Real Light build loses its light, since VRChat disables audio
+sources and lights on mobile avatars: the tool is still held and can still
+be placed, dark. Parameters stay as they are, so the avatar syncs the same
+way on every platform.
 
 ## Limits and unknowns
 

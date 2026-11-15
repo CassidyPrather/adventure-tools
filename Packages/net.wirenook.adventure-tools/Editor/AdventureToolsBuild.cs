@@ -283,9 +283,7 @@ namespace Wirenook.AdventureTools.Editor
                 // Side by side on a thumbnail the two plain ones are one
                 // thing, a light; a real one is the point of its variant.
                 FeaturePrefab.Describe(root, light.Id, real ? light.Label + " (real light)" : light.Label, light.Id, "light", 30,
-                    joinAvatarMesh: !real, summaryIcon: real ? light.Id : "flashlight",
-                    // VRChat switches lights on avatars off on Android and iOS.
-                    pcOnly: real);
+                    joinAvatarMesh: !real, summaryIcon: real ? light.Id : "flashlight");
             });
         }
 

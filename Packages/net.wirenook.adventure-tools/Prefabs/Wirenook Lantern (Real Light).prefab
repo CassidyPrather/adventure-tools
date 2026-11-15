@@ -1545,7 +1545,6 @@ GameObject:
   - component: {fileID: 8502526724025302844}
   - component: {fileID: 5775898813183003960}
   - component: {fileID: 6301981123791082876}
-  - component: {fileID: 4567098082876877401}
   m_Layer: 0
   m_Name: Wirenook Lantern (Real Light)
   m_TagString: Untagged
@@ -1863,18 +1862,6 @@ MonoBehaviour:
   tag: light
   tagPriority: 30
   joinAvatarMesh: 0
---- !u!114 &4567098082876877401
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5915983318705239498}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ee1467e0dd24a5b4781552a7a0a1d130, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &7091381270048379744
 GameObject:
   m_ObjectHideFlags: 0
