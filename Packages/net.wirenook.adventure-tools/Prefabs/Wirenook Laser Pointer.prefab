@@ -296,6 +296,7 @@ MonoBehaviour:
   id: laser-pointer
   label: Laser pointer
   icon: {fileID: 2800000, guid: 2a87f84c320ab774ba4d64658fba9982, type: 3}
+  summaryIcon: {fileID: 2800000, guid: 0cf8221be5d184b4aa363934c82a0ac2, type: 3}
   tag: laser pointer
   tagPriority: 40
   joinAvatarMesh: 1

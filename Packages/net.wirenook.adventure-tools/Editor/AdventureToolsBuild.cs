@@ -6,11 +6,13 @@ using Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
+using VRC.SDK3.Dynamics.Constraint.Components;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDK3.Dynamics.PhysBone.Components;
 using VRC.SDKBase;
 using Wirenook.Assets;
 using Wirenook.Assets.Editor;
+using Wirenook.WorldSync.Editor;
 
 namespace Wirenook.AdventureTools.Editor
 {
@@ -27,13 +29,19 @@ namespace Wirenook.AdventureTools.Editor
         private const string Generated = Package + "/Generated";
         private const string Prefabs = Package + "/Prefabs";
 
-        public const string FlashlightPrefab = Prefabs + "/Wirenook Flashlight.prefab";
-        public const string FlashlightLightPrefab = Prefabs + "/Wirenook Flashlight (Real Light).prefab";
-        public const string LanternPrefab = Prefabs + "/Wirenook Lantern.prefab";
+        public const string LightPrefab = Prefabs + "/Wirenook Light.prefab";
+        public const string LightRealPrefab = Prefabs + "/Wirenook Light (Real Light).prefab";
         public const string MegaphonePrefab = Prefabs + "/Wirenook Megaphone.prefab";
         public const string LaserPrefab = Prefabs + "/Wirenook Laser Pointer.prefab";
         public const string NoticePrefab = Prefabs + "/Wirenook Notice.prefab";
         public const string BundlePrefab = Prefabs + "/Wirenook Adventure Tools.prefab";
+        public const string BundleRealPrefab = Prefabs + "/Wirenook Adventure Tools (Real Light).prefab";
+
+        /// <summary>Which light is out: 0 none, 1 the flashlight, 2 the lantern.</summary>
+        private const string LightParameter = "WN/Light";
+
+        /// <summary>Whether the light has been left standing in the world.</summary>
+        private const string PlacedParameter = "WN/LightPlaced";
 
         private const string Mount = "Mount";
         private const string Grip = "Grip";
@@ -41,18 +49,30 @@ namespace Wirenook.AdventureTools.Editor
         /// <summary>How far the laser reaches, in metres.</summary>
         private const float LaserRange = 30f;
 
-        /// <summary>How long a notice stays up, in seconds.</summary>
-        private const float NoticeSeconds = 4.5f;
+        /// <summary>How long a notice stays up between fading in and out, in seconds.</summary>
+        private const float NoticeSeconds = 3.85f;
+        private const float NoticeFadeIn = 0.25f;
+        private const float NoticeFadeOut = 0.4f;
+
+        /// <summary>Checks the placed light's synced anchor as far as the editor can.</summary>
+        [MenuItem("Tools/Wirenook/Adventure Tools/Verify")]
+        public static string Verify()
+        {
+            var report = SyncedAnchorCheck.Run(LightRealPrefab, Generated + "/light-real-fx.controller", PlacedParameter);
+            Debug.Log("[adventure-tools] " + report);
+            return report;
+        }
 
         [MenuItem("Tools/Wirenook/Adventure Tools/Rebuild")]
         public static void Rebuild()
         {
-            Flashlight();
-            Lantern();
+            HandLight(real: false);
+            HandLight(real: true);
             Megaphone();
             LaserPointer();
             Notice();
-            Bundle();
+            Bundle(BundlePrefab, LightPrefab);
+            Bundle(BundleRealPrefab, LightRealPrefab);
             AssetDatabase.SaveAssets();
             Debug.Log("[adventure-tools] Rebuilt prefabs and animators.");
         }
@@ -71,76 +91,66 @@ namespace Wirenook.AdventureTools.Editor
             return FeaturePrefab.Model(grip, Models + "/" + modelFile);
         }
 
-        public static void Flashlight()
+        /// <summary>
+        /// The flashlight and the lantern as one feature. Both are held in
+        /// the left hand, so only one is out at a time, and one integer
+        /// parameter says which.
+        ///
+        /// It comes in two builds. The plain one shows light as glowing
+        /// geometry (a beam cone, a halo), joins the avatar's mesh and costs
+        /// nothing in performance rank. The real one drops that geometry for
+        /// an actual light that lights the world for everyone. VRChat ranks
+        /// any avatar with a light "Poor" and with two "Very Poor", so the two
+        /// tools share a single light, which is why they must be exclusive.
+        /// The real one can also be left standing in the world: it is going to
+        /// be a separate mesh anyway, and a lamp is worth putting down.
+        /// </summary>
+        public static void HandLight(bool real)
         {
-            const string parameter = "WN/Flashlight";
-            const string controller = Generated + "/flashlight-fx.controller";
-            const string lightName = "Light";
-
-            string lightPath = null;
-            void Configure(GameObject root)
+            var controller = Generated + (real ? "/light-real-fx.controller" : "/light-fx.controller");
+            if (real) SyncedAnchor.Prepare();
+            FeaturePrefab.Edit(real ? LightRealPrefab : LightPrefab, root =>
             {
-                var model = HeldModel(root, "flashlight.fbx", HumanBodyBones.LeftHand);
-                var body = FeaturePrefab.PathTo(root, FeaturePrefab.Bone(model, "Flashlight"));
-                var beam = FeaturePrefab.Bone(model, "Flashlight.Beam");
-                var beamPath = FeaturePrefab.PathTo(root, beam);
-                lightPath = beamPath + "/" + lightName;
+                var mount = FeaturePrefab.Child(root, Mount);
+                FeaturePrefab.AttachToBone(mount, HumanBodyBones.LeftHand);
+                var grip = FeaturePrefab.Child(mount, Grip);
+                FeaturePrefab.Ensure<WirenookHandGrip>(grip).hand = HumanBodyBones.LeftHand;
 
-                var fx = ControllerBuilder.Rebuild(controller);
-                PopToggle.Layer(fx, "Flashlight", parameter, body, (clip, phase) =>
+                SyncedAnchor rig = null;
+                GameObject torchModel, lanternModel;
+                Transform torch, beam, lantern, body, glow;
+                if (real)
                 {
-                    // The beam switches on once the torch has landed in the
-                    // hand and off before it leaves, like a real switch.
-                    var lit = phase == "on";
-                    PopToggle.Scale(clip, beamPath, AnimationCurve.Constant(0f, 1f / 60f, lit ? 1f : 0f));
-                    // Only the real-light variant has this object; the curve
-                    // is inert on the plain one.
-                    clip.Constant(lightPath, typeof(Light), "m_Enabled", lit ? 1f : 0f);
-                });
-                fx.Save();
+                    // Not parented to the hand but following it, so that it
+                    // can stop following and stay where it is.
+                    var placed = FeaturePrefab.Child(root, "Placed");
+                    rig = SyncedAnchor.Configure(root, placed, grip.transform, PlacedParameter);
+                    torchModel = RigidProp.Build(placed, Models + "/flashlight.fbx", Generated);
+                    lanternModel = RigidProp.Build(placed, Models + "/lantern.fbx", Generated);
+                    torch = FeaturePrefab.Find(torchModel, "Flashlight");
+                    beam = FeaturePrefab.Find(torchModel, "Flashlight.Beam");
+                    lantern = FeaturePrefab.Find(lanternModel, "Lantern");
+                    body = FeaturePrefab.Find(lanternModel, "Lantern.Body");
+                    glow = FeaturePrefab.Find(lanternModel, "Lantern.Glow");
+                    // The light itself replaces the geometry that stood in for it.
+                    foreach (var standIn in new[] { beam, glow })
+                    {
+                        foreach (var renderer in standIn.GetComponents<MeshRenderer>()) Object.DestroyImmediate(renderer);
+                        foreach (var filter in standIn.GetComponents<MeshFilter>()) Object.DestroyImmediate(filter);
+                    }
+                }
+                else
+                {
+                    torchModel = FeaturePrefab.Model(grip, Models + "/flashlight.fbx");
+                    lanternModel = FeaturePrefab.Model(grip, Models + "/lantern.fbx");
+                    torch = FeaturePrefab.Bone(torchModel, "Flashlight");
+                    beam = FeaturePrefab.Bone(torchModel, "Flashlight.Beam");
+                    lantern = FeaturePrefab.Bone(lanternModel, "Lantern");
+                    body = FeaturePrefab.Bone(lanternModel, "Lantern.Body");
+                    glow = FeaturePrefab.Bone(lanternModel, "Lantern.Glow");
+                }
 
-                FeaturePrefab.Merge(root, fx.Controller);
-                FeaturePrefab.Parameters(root, FeaturePrefab.SyncedBool(parameter));
-                FeaturePrefab.InstallMenu(root);
-                FeaturePrefab.MenuToggle(root, "Flashlight", "flashlight", parameter);
-                FeaturePrefab.Describe(root, "flashlight", "Flashlight", "flashlight", "flashlight", 30, joinAvatarMesh: true);
-            }
-
-            FeaturePrefab.Edit(FlashlightPrefab, Configure);
-
-            // A real spotlight lights the world for everyone, and costs the
-            // avatar its performance rank: any light at all is "Poor". It is a
-            // separate prefab so that cost is a choice.
-            Variant(FlashlightPrefab, FlashlightLightPrefab, root =>
-            {
-                var beam = FeaturePrefab.Find(root, "Flashlight.Beam");
-                var holder = FeaturePrefab.Child(beam.gameObject, lightName);
-                // The beam bone's own axes depend on the export; aim along the
-                // model's forward instead.
-                holder.transform.rotation = FeaturePrefab.Find(root, Grip).GetChild(0).rotation;
-                var light = FeaturePrefab.Ensure<Light>(holder);
-                light.type = LightType.Spot;
-                light.color = new Color(1f, 0.93f, 0.78f);
-                light.intensity = 1.6f;
-                light.range = 14f;
-                light.spotAngle = 55f;
-                light.shadows = LightShadows.None;
-                light.enabled = false;
-                FeaturePrefab.Describe(root, "flashlight", "Flashlight (real light)", "flashlight", "flashlight", 30, joinAvatarMesh: true);
-            });
-        }
-
-        public static void Lantern()
-        {
-            const string parameter = "WN/Lantern";
-            FeaturePrefab.Edit(LanternPrefab, root =>
-            {
-                var model = HeldModel(root, "lantern.fbx", HumanBodyBones.LeftHand);
-                var handle = FeaturePrefab.PathTo(root, FeaturePrefab.Bone(model, "Lantern"));
-                var body = FeaturePrefab.Bone(model, "Lantern.Body");
-                var glow = FeaturePrefab.PathTo(root, FeaturePrefab.Bone(model, "Lantern.Glow"));
-
-                // The body hangs from the handle and swings with the hand.
+                // The lantern's body hangs from the handle and swings with the hand.
                 var swing = FeaturePrefab.Ensure<VRCPhysBone>(body.gameObject);
                 swing.rootTransform = body;
                 swing.integrationType = VRCPhysBoneBase.IntegrationType.Simplified;
@@ -154,29 +164,141 @@ namespace Wirenook.AdventureTools.Editor
                 swing.allowGrabbing = VRCPhysBoneBase.AdvancedBool.True;
                 swing.allowPosing = VRCPhysBoneBase.AdvancedBool.True;
 
-                var fx = ControllerBuilder.Rebuild(Generated + "/lantern-fx.controller");
-                PopToggle.Layer(fx, "Lantern", parameter, handle, (clip, phase) =>
-                {
-                    if (phase != "on")
-                    {
-                        PopToggle.Scale(clip, glow, AnimationCurve.Constant(0f, 1f / 60f, 0f));
-                        return;
-                    }
+                var beamPath = FeaturePrefab.PathTo(root, beam);
+                var glowPath = FeaturePrefab.PathTo(root, glow);
 
-                    // A slow breathing glow, so the flame reads as alive.
-                    var breathe = new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(1.3f, 1.12f), new Keyframe(2.6f, 1f));
-                    for (var key = 0; key < breathe.length; key++) breathe.SmoothTangents(key, 0f);
-                    PopToggle.Scale(clip, glow, breathe);
-                    clip.Loop();
-                });
+                var fx = ControllerBuilder.Rebuild(controller);
+                fx.Int(LightParameter);
+                PopToggle.Layer(fx, "Flashlight", FeaturePrefab.PathTo(root, torch),
+                    on => on.Equal(LightParameter, 1), off => off.NotEqual(LightParameter, 1), (clip, phase) =>
+                    {
+                        if (real) return;
+                        // The beam switches on once the torch has landed in the
+                        // hand and off before it leaves, like a real switch.
+                        PopToggle.Scale(clip, beamPath, AnimationCurve.Constant(0f, 1f / 60f, phase == "on" ? 1f : 0f));
+                    });
+                PopToggle.Layer(fx, "Lantern", FeaturePrefab.PathTo(root, lantern),
+                    on => on.Equal(LightParameter, 2), off => off.NotEqual(LightParameter, 2), (clip, phase) =>
+                    {
+                        if (real) return;
+                        if (phase != "on")
+                        {
+                            PopToggle.Scale(clip, glowPath, AnimationCurve.Constant(0f, 1f / 60f, 0f));
+                            return;
+                        }
+
+                        // A slow breathing glow, so the flame reads as alive.
+                        var breathe = new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(1.3f, 1.12f), new Keyframe(2.6f, 1f));
+                        for (var key = 0; key < breathe.length; key++) breathe.SmoothTangents(key, 0f);
+                        PopToggle.Scale(clip, glowPath, breathe);
+                        clip.Loop();
+                    });
+
+                var parameters = new List<ParameterConfig> { FeaturePrefab.SyncedInt(LightParameter) };
+                if (real)
+                {
+                    SharedLamp(root, fx, torchModel, beam, lanternModel, glow);
+                    Placement(fx, rig);
+                    parameters.Add(FeaturePrefab.SyncedBool(PlacedParameter));
+                    parameters.AddRange(rig.Parameters());
+                }
+
                 fx.Save();
 
                 FeaturePrefab.Merge(root, fx.Controller);
-                FeaturePrefab.Parameters(root, FeaturePrefab.SyncedBool(parameter));
+                FeaturePrefab.Parameters(root, parameters.ToArray());
                 FeaturePrefab.InstallMenu(root);
-                FeaturePrefab.MenuToggle(root, "Lantern", "lantern", parameter);
-                FeaturePrefab.Describe(root, "lantern", "Lantern", "lantern", "lantern", 30, joinAvatarMesh: true);
+                FeaturePrefab.MenuFolder(root, "Light", "flashlight");
+                FeaturePrefab.MenuToggle(FeaturePrefab.Child(root, "Menu Flashlight"), "Flashlight", "flashlight", LightParameter, 1);
+                FeaturePrefab.MenuToggle(FeaturePrefab.Child(root, "Menu Lantern"), "Lantern", "lantern", LightParameter, 2);
+                if (real) FeaturePrefab.MenuToggle(FeaturePrefab.Child(root, "Menu Place"), "Place", "drop", PlacedParameter);
+                FeaturePrefab.Describe(root, "light", real ? "Light (real light)" : "Light", "flashlight", "light", 30,
+                    joinAvatarMesh: !real);
             });
+        }
+
+        /// <summary>
+        /// The one light both tools shine with. Its type cannot be animated,
+        /// so it is a spotlight for both: narrow and aimed along the torch, or
+        /// wide and aimed down from the lantern's flame, where it hangs. A
+        /// constraint moves it between a mount on each tool.
+        /// </summary>
+        private static void SharedLamp(GameObject root, ControllerBuilder fx, GameObject torchModel, Transform beam,
+            GameObject lanternModel, Transform glow)
+        {
+            // The bones' own axes depend on the export; aim by the models' instead.
+            var torchMount = FeaturePrefab.Child(beam.gameObject, "Lamp Mount");
+            torchMount.transform.rotation = torchModel.transform.rotation;
+            // Under the flame rather than beside it: a PhysBone does not swing
+            // a bone that has more than one child, and the body has to swing.
+            var lanternMount = FeaturePrefab.Child(glow.gameObject, "Lamp Mount");
+            lanternMount.transform.rotation = lanternModel.transform.rotation * Quaternion.LookRotation(Vector3.down, Vector3.forward);
+
+            var lamp = FeaturePrefab.Child(root, "Lamp");
+            var light = FeaturePrefab.Ensure<Light>(lamp);
+            light.type = LightType.Spot;
+            light.color = new Color(1f, 0.93f, 0.78f);
+            light.shadows = LightShadows.None;
+            light.enabled = false;
+
+            var follow = FeaturePrefab.Ensure<VRCParentConstraint>(lamp);
+            follow.ClearSources();
+            follow.AddSource(new VRCConstraintSource { SourceTransform = torchMount.transform, Weight = 1f });
+            follow.AddSource(new VRCConstraintSource { SourceTransform = lanternMount.transform, Weight = 0f });
+            follow.IsActive = true;
+            follow.Locked = true;
+
+            var lampPath = FeaturePrefab.PathTo(root, lamp.transform);
+            AnimationClip Shine(string name, bool lit, bool fromLantern, float angle, float range, float intensity) =>
+                fx.Clip("lamp " + name, clip => clip
+                    .Constant(lampPath, typeof(Light), "m_Enabled", lit ? 1f : 0f)
+                    .Constant(lampPath, typeof(Light), "m_SpotAngle", angle)
+                    .Constant(lampPath, typeof(Light), "m_Range", range)
+                    .Constant(lampPath, typeof(Light), "m_Intensity", intensity)
+                    .Constant(lampPath, typeof(VRCParentConstraint), "Sources.source0.Weight", fromLantern ? 0f : 1f)
+                    .Constant(lampPath, typeof(VRCParentConstraint), "Sources.source1.Weight", fromLantern ? 1f : 0f));
+
+            var layer = fx.Layer("Lamp");
+            var states = new[]
+            {
+                layer.State("Dark", Shine("dark", false, false, 55f, 14f, 1.6f)),
+                layer.State("Beam", Shine("beam", true, false, 55f, 14f, 1.6f)),
+                layer.State("Glow", Shine("glow", true, true, 150f, 7f, 1.3f)),
+            };
+            for (var from = 0; from < states.Length; from++)
+            {
+                for (var to = 0; to < states.Length; to++)
+                {
+                    if (from != to) states[from].To(states[to]).Equal(LightParameter, to);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Leaving the light in the world and picking it up again. Putting
+        /// the light away picks it up too, so the next one comes out in the
+        /// hand rather than wherever the last one was left.
+        /// </summary>
+        private static void Placement(ControllerBuilder fx, SyncedAnchor rig)
+        {
+            fx.Bool(PlacedParameter);
+            var layer = fx.Layer("Light Placement");
+            var idle = layer.State("Idle");
+            var pickUp = layer.State("Pick Up");
+            pickUp.Behaviour<VRCAvatarParameterDriver>(driver =>
+            {
+                driver.localOnly = true;
+                driver.parameters = new List<VRC_AvatarParameterDriver.Parameter>
+                {
+                    new VRC_AvatarParameterDriver.Parameter
+                    {
+                        type = VRC_AvatarParameterDriver.ChangeType.Set, name = PlacedParameter, value = 0f,
+                    },
+                };
+            });
+            idle.To(pickUp).Equal(LightParameter, 0).IfTrue(PlacedParameter);
+            pickUp.To(idle).IfFalse(PlacedParameter);
+            rig.AddLayers(fx, PlacedParameter);
         }
 
         public static void Megaphone()
@@ -282,7 +404,10 @@ namespace Wirenook.AdventureTools.Editor
                     Unsynced(ray + "_Ratio"), Unsynced(ray + "_Hit"), Unsynced(ray + "_Distance"));
                 FeaturePrefab.InstallMenu(root);
                 FeaturePrefab.MenuToggle(root, "Laser Pointer", "laser-pointer", parameter);
-                FeaturePrefab.Describe(root, "laser-pointer", "Laser pointer", "laser-pointer", "laser pointer", 40, joinAvatarMesh: true);
+                // On a thumbnail the pointer, the megaphone and the notices are one
+                // thing: ways to get a group's attention.
+                FeaturePrefab.Describe(root, "laser-pointer", "Laser pointer", "laser-pointer", "laser pointer", 40,
+                    joinAvatarMesh: true, summaryIcon: "megaphone");
             });
         }
 
@@ -354,31 +479,44 @@ namespace Wirenook.AdventureTools.Editor
                 });
                 done.To(idle).Equal(parameter, 0);
 
-                var showing = new List<StateBuilder>();
+                // A card fades in, stays, and fades out, as three states, so
+                // that switching it off (or picking another) can cut the stay
+                // short and go straight to the fade-out. One that is still
+                // fading in finishes that first; a card never just vanishes.
+                AnimationClip Card(string name, int index, AnimationCurve show) => fx.Clip("notice " + name, clip => clip
+                    .Active(cardName, AnimationCurve.Constant(0f, show[show.length - 1].time, 1f))
+                    .Material<MeshRenderer>(cardName, "_Index", AnimationCurve.Constant(0f, show[show.length - 1].time, index))
+                    .Material<MeshRenderer>(cardName, "_Show", show));
+
+                var appearing = new List<StateBuilder>();
+                var leaving = new List<StateBuilder>();
                 for (var i = 0; i < notices.Count; i++)
                 {
-                    var index = i;
-                    var state = layer.State(notices[i].id, fx.Clip("notice " + notices[i].id, clip =>
-                    {
-                        var fade = new AnimationCurve(
-                            new Keyframe(0f, 0f), new Keyframe(0.25f, 1f),
-                            new Keyframe(NoticeSeconds - 0.4f, 1f), new Keyframe(NoticeSeconds, 0f));
-                        clip.Active(cardName, true)
-                            .Material<MeshRenderer>(cardName, "_Index", index)
-                            .Material<MeshRenderer>(cardName, "_Show", fade);
-                    }));
-                    WirenookSounds.PlayOnEnter(state, WirenookSounds.SourceName, "chime", 0.4f);
-                    idle.To(state).Equal(parameter, i + 1);
-                    state.To(done).AfterTime(1f);
-                    showing.Add(state);
+                    var chosen = i + 1;
+                    var id = notices[i].id;
+                    var appear = layer.State(id, Card(id + " appear", i, AnimationCurve.EaseInOut(0f, 0f, NoticeFadeIn, 1f)));
+                    var stay = layer.State(id + " (stay)", Card(id + " stay", i, AnimationCurve.Constant(0f, NoticeSeconds, 1f)));
+                    var leave = layer.State(id + " (leave)", Card(id + " leave", i, AnimationCurve.EaseInOut(0f, 1f, NoticeFadeOut, 0f)));
+                    WirenookSounds.PlayOnEnter(appear, WirenookSounds.SourceName, "chime", 0.4f);
+
+                    idle.To(appear).Equal(parameter, chosen);
+                    appear.To(leave).AfterTime(1f).NotEqual(parameter, chosen);
+                    appear.To(stay).AfterTime(1f);
+                    stay.To(leave).NotEqual(parameter, chosen);
+                    stay.To(leave).AfterTime(1f);
+                    // Still chosen means it ran its full time: clear the choice.
+                    leave.To(done).AfterTime(1f).Equal(parameter, chosen);
+                    leave.To(idle).AfterTime(1f).Equal(parameter, 0);
+                    appearing.Add(appear);
+                    leaving.Add(leave);
                 }
 
-                // Picking another notice while one is up replaces it at once.
-                for (var from = 0; from < showing.Count; from++)
+                // Another notice picked meanwhile comes up once this one has gone.
+                for (var from = 0; from < leaving.Count; from++)
                 {
-                    for (var to = 0; to < showing.Count; to++)
+                    for (var to = 0; to < appearing.Count; to++)
                     {
-                        if (from != to) showing[from].To(showing[to]).Equal(parameter, to + 1);
+                        if (from != to) leaving[from].To(appearing[to]).AfterTime(1f).Equal(parameter, to + 1);
                     }
                 }
 
@@ -394,7 +532,7 @@ namespace Wirenook.AdventureTools.Editor
                     FeaturePrefab.MenuToggle(item, notices[i].id, notices[i].icon, parameter, i + 1);
                 }
 
-                FeaturePrefab.Describe(root, "notice", "Screen notices", "notice", "screen notice", 20);
+                FeaturePrefab.Describe(root, "notice", "Screen notices", "notice", "screen notice", 20, summaryIcon: "megaphone");
             });
         }
 
@@ -402,38 +540,39 @@ namespace Wirenook.AdventureTools.Editor
         /// All the tools behind one "Tools" entry, so adding the set costs an
         /// avatar a single slot in its top-level menu.
         /// </summary>
-        public static void Bundle()
+        /// <param name="lightPrefab">Which build of the light the set carries.</param>
+        private static void Bundle(string bundlePath, string lightPrefab)
         {
-            FeaturePrefab.Edit(BundlePrefab, root =>
+            FeaturePrefab.Edit(bundlePath, root =>
             {
                 FeaturePrefab.InstallMenu(root);
                 FeaturePrefab.MenuFolder(root, "Tools", "more");
-                foreach (var path in new[] { LaserPrefab, MegaphonePrefab, FlashlightPrefab, LanternPrefab, NoticePrefab })
+                var wanted = new[] { LaserPrefab, MegaphonePrefab, lightPrefab, NoticePrefab }
+                    .Select(path => AssetDatabase.LoadAssetAtPath<GameObject>(path)).ToList();
+
+                // A set built before the tools were rearranged holds ones that
+                // are no longer part of it.
+                foreach (var child in root.transform.Cast<Transform>().ToList())
                 {
-                    var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                    if (!wanted.Contains(PrefabUtility.GetCorrespondingObjectFromSource(child.gameObject)))
+                        Object.DestroyImmediate(child.gameObject);
+                }
+
+                for (var i = 0; i < wanted.Count; i++)
+                {
+                    var prefab = wanted[i];
                     var instance = root.transform.Cast<Transform>()
                                        .Select(child => child.gameObject)
                                        .FirstOrDefault(child => PrefabUtility.GetCorrespondingObjectFromSource(child) == prefab)
                                    ?? (GameObject)PrefabUtility.InstantiatePrefab(prefab, root.transform);
+                    // The menu lists them in the order they sit in.
+                    instance.transform.SetSiblingIndex(i);
                     // Each tool installs itself at the top of the menu when
                     // used alone; inside the set the folder above does it.
                     var installer = instance.GetComponent<ModularAvatarMenuInstaller>();
                     if (installer != null) Object.DestroyImmediate(installer);
                 }
             });
-        }
-
-        private static void Variant(string parentPath, string path, System.Action<GameObject> configure)
-        {
-            if (!File.Exists(path))
-            {
-                var parent = AssetDatabase.LoadAssetAtPath<GameObject>(parentPath);
-                var instance = (GameObject)PrefabUtility.InstantiatePrefab(parent);
-                PrefabUtility.SaveAsPrefabAsset(instance, path);
-                Object.DestroyImmediate(instance);
-            }
-
-            FeaturePrefab.Edit(path, configure);
         }
     }
 }

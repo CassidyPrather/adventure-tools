@@ -3,7 +3,7 @@
   "displayName": "Wirenook Adventure Tools",
   "version": "0.1.0",
   "unity": "2022.3",
-  "description": "Laser pointer, megaphone, flashlight, lantern and screen-space notices for VRChat avatars.",
+  "description": "Laser pointer, megaphone, a flashlight and lantern (as glowing geometry or a real light) and screen-space notices for VRChat avatars.",
   "author": {
     "name": "Cassidy Prather",
     "email": "cassidy@wirenook.net",
@@ -13,7 +13,8 @@
   "vpmDependencies": {
     "com.vrchat.avatars": "^3.10.6",
     "nadena.dev.modular-avatar": "^1.18.7",
-    "net.wirenook.assets": "^0.1.0"
+    "net.wirenook.assets": "^0.1.0",
+    "net.wirenook.world-sync": "^0.1.0"
   },
   "url": "https://github.com/CassidyPrather/adventure-tools"
 }

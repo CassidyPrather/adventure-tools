@@ -1,8 +1,9 @@
 # Wirenook Adventure Tools
 
 Hand tools for exploring VRChat worlds with a group: a laser pointer, a
-megaphone, a flashlight, a lantern, and notices that appear on everyone's
-screen.
+megaphone, a flashlight and a lantern (as glowing geometry or as a real
+light you can leave standing in the world), and notices that appear on
+everyone's screen.
 
 Package: `net.wirenook.adventure-tools`. Needs the VRChat Avatars SDK 3.10.6
 or newer, [Modular Avatar](https://modular-avatar.nadena.dev/) and
@@ -12,15 +13,15 @@ or newer, [Modular Avatar](https://modular-avatar.nadena.dev/) and
 
 Drag a prefab onto an avatar; Modular Avatar adds its menu entry, parameter
 and animator at build time. Each tool works on its own, and
-`Wirenook Adventure Tools` puts all five behind one "Tools" menu entry.
+`Wirenook Adventure Tools` puts them all behind one "Tools" menu entry;
+`Wirenook Adventure Tools (Real Light)` is the same set with the real light.
 
 | Prefab | Hand | What it does | Synced bits | Rank cost |
 | --- | --- | --- | --- | --- |
 | `Wirenook Laser Pointer` | Right | A beam from the pointer's tip to whatever it hits, with a dot on the surface. | 1 | 1 raycast |
 | `Wirenook Megaphone` | Right | A megaphone with pulsing sound waves and a two-tone bleep when raised. | 1 | 1 audio source |
-| `Wirenook Flashlight` | Left | A torch with a visible beam. It does not light the world. | 1 | none |
-| `Wirenook Flashlight (Real Light)` | Left | The same torch with a real spotlight. | 1 | 1 light: the avatar ranks **Poor** |
-| `Wirenook Lantern` | Left | A lantern that swings from its handle and glows. | 1 | 1 PhysBone |
+| `Wirenook Light` | Left | A flashlight with a visible beam and a lantern that swings from its handle and glows, one at a time. Neither lights the world. | 8 | 1 PhysBone |
+| `Wirenook Light (Real Light)` | Left | The same two tools shining a real light, which can be placed in the world. | 58 | 1 light: the avatar ranks **Poor**; 3 meshes, 1 PhysBone, constraints and contacts |
 | `Wirenook Notice` | | Eight notices ("Portal dropping", "Respawn", ...) shown on the screen of everyone who can see you, with a chime. | 8 | 1 audio source, 1 mesh, larger bounds |
 
 Tools appear with a small pop and shrink away rather than blinking in and
@@ -45,12 +46,26 @@ Uses the SDK's `VRCRaycast` (version 1.1), which runs on every viewer's
 own client, so the beam length needs no synced parameters. It reaches 30 m
 and hits world geometry and other players.
 
-### Flashlight and real light
+### Flashlight, lantern and real light
 
-VRChat ranks an avatar with any light on it as Poor, enabled or not. The
-default flashlight therefore draws its beam without lighting anything. Use
-the Real Light prefab when you actually need to see in a dark world and
-accept the rank.
+The flashlight and the lantern are one feature. Both are held in the left
+hand, so only one is out at a time: taking one out puts the other away.
+
+VRChat ranks an avatar with any light on it as Poor, enabled or not, and
+with two as Very Poor. `Wirenook Light` therefore draws a beam cone and a
+glow without lighting anything. `Wirenook Light (Real Light)` leaves that
+geometry out and shines an actual light instead, for when you need to see
+in a dark world and accept the rank. Both tools share its single light. A
+light's type cannot be animated, so it is a spotlight either way: narrow
+and along the flashlight, or wide and downward from the lantern's flame.
+
+The real light has a "Place" switch that leaves the tool standing where
+your hand is, lit, and picks it up again. The placed position is synced
+(see `net.wirenook.world-sync`), so people who arrive later see it where
+you left it. Putting the light away picks it up too. The plain build cannot
+be placed: it is part of the avatar's mesh, which is what keeps it free in
+performance rank, and a merged mesh disappears whenever the avatar is out
+of view.
 
 ### Screen notices
 
@@ -65,8 +80,10 @@ A viewer only sees the card while your avatar is roughly on their screen:
 Unity does not draw a mesh whose bounds are out of view, and the bounds are
 as large (3.6 m) as VRChat's Good rank allows.
 
-Picking a notice shows it for 4.5 seconds, then your own client clears the
-choice. The cards are drawn from `Textures/notices.json` by
+Picking a notice fades it in, shows it for about four seconds and fades it
+out, then your own client clears the choice. Switching it off early, or
+picking another, skips straight to the fade-out; a card that is still
+fading in finishes that first. The cards are drawn from `Textures/notices.json` by
 `tools/notice_atlas.py`; add your own by appending to that list and
 rebuilding.
 
@@ -74,7 +91,8 @@ rebuilding.
 
 - Not yet run in the VRChat client. The notice shader has only been
   checked in the Unity editor, not in a headset.
-- Two tools in the same hand can be out at once and will overlap.
+- The real light, its placing and the reworked notice fades have only been
+  checked in the Unity editor.
 - The tools do not pose your fingers around them.
 
 ## Rebuilding the generated assets
