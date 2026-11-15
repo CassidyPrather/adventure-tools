@@ -410,6 +410,41 @@ PrefabInstance:
       propertyPath: m_Name
       value: laser-pointer
       objectReference: {fileID: 0}
+    - target: {fileID: 3695419769730252094, guid: a27eb0433263b0248af7c442de1eda2c,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3695419769730252094, guid: a27eb0433263b0248af7c442de1eda2c,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3695419769730252094, guid: a27eb0433263b0248af7c442de1eda2c,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4248658015279588663, guid: a27eb0433263b0248af7c442de1eda2c,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4248658015279588663, guid: a27eb0433263b0248af7c442de1eda2c,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4248658015279588663, guid: a27eb0433263b0248af7c442de1eda2c,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7302127862637253299, guid: a27eb0433263b0248af7c442de1eda2c,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:

@@ -264,6 +264,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4354076137909522524}
     m_Modifications:
+    - target: {fileID: -8688213110888600034, guid: e92a9bfa09aa77e4193c4cabf1fcde03,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8688213110888600034, guid: e92a9bfa09aa77e4193c4cabf1fcde03,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8688213110888600034, guid: e92a9bfa09aa77e4193c4cabf1fcde03,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: e92a9bfa09aa77e4193c4cabf1fcde03,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -318,6 +333,21 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: lantern
+      objectReference: {fileID: 0}
+    - target: {fileID: 3598194409146672686, guid: e92a9bfa09aa77e4193c4cabf1fcde03,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3598194409146672686, guid: e92a9bfa09aa77e4193c4cabf1fcde03,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3598194409146672686, guid: e92a9bfa09aa77e4193c4cabf1fcde03,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
