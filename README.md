@@ -1,9 +1,9 @@
 # Wirenook Adventure Tools
 
 Hand tools for exploring VRChat worlds with a group: a laser pointer, a
-megaphone, a flashlight and a lantern (as glowing geometry or as a real
-light you can leave standing in the world), and notices that appear on
-everyone's screen.
+megaphone, a flashlight, a lantern, and notices that appear on everyone's
+screen. The flashlight and lantern each come in a second build that shines
+a real light and can be left standing in the world.
 
 Package: `net.wirenook.adventure-tools`. Needs the VRChat Avatars SDK 3.10.6
 or newer, [Modular Avatar](https://modular-avatar.nadena.dev/) and
@@ -13,15 +13,18 @@ or newer, [Modular Avatar](https://modular-avatar.nadena.dev/) and
 
 Drag a prefab onto an avatar; Modular Avatar adds its menu entry, parameter
 and animator at build time. Each tool works on its own, and
-`Wirenook Adventure Tools` puts them all behind one "Tools" menu entry;
-`Wirenook Adventure Tools (Real Light)` is the same set with the real light.
+`Wirenook Adventure Tools` puts the plain ones behind one "Tools" menu
+entry. `Wirenook Adventure Tools (Real Flashlight)` and `(Real Lantern)`
+are the same set with that one tool as a real light and without the other.
 
 | Prefab | Hand | What it does | Synced bits | Rank cost |
 | --- | --- | --- | --- | --- |
 | `Wirenook Laser Pointer` | Right | A beam from the pointer's tip to whatever it hits, with a dot on the surface. | 1 | 1 raycast |
 | `Wirenook Megaphone` | Right | A megaphone with pulsing sound waves and a two-tone bleep when raised. | 1 | 1 audio source |
-| `Wirenook Light` | Left | A flashlight with a visible beam and a lantern that swings from its handle and glows, one at a time. Neither lights the world. | 8 | 1 PhysBone |
-| `Wirenook Light (Real Light)` | Left | The same two tools shining a real light, which can be placed in the world. | 58 | 1 light: the avatar ranks **Poor**; 3 meshes, 1 PhysBone, constraints and contacts |
+| `Wirenook Flashlight` | Left | A torch with a visible beam. It does not light the world. | 8, shared | none |
+| `Wirenook Lantern` | Left | A lantern that swings from its handle and glows. It does not light the world. | 8, shared | 1 PhysBone |
+| `Wirenook Flashlight (Real Light)` | Left | The torch with a real spotlight. Can be placed in the world. | 58 | 1 light: the avatar ranks **Poor**; 1 mesh, constraints and contacts |
+| `Wirenook Lantern (Real Light)` | Left | The lantern with a real point light. Can be placed in the world. | 58 | 1 light: the avatar ranks **Poor**; 2 meshes, 1 PhysBone, constraints and contacts |
 | `Wirenook Notice` | | Eight notices ("Portal dropping", "Respawn", ...) shown on the screen of everyone who can see you, with a chime. | 8 | 1 audio source, 1 mesh, larger bounds |
 
 Tools appear with a small pop and shrink away rather than blinking in and
@@ -48,24 +51,26 @@ and hits world geometry and other players.
 
 ### Flashlight, lantern and real light
 
-The flashlight and the lantern are one feature. Both are held in the left
-hand, so only one is out at a time: taking one out puts the other away.
+Both are held in the left hand and answer to one shared parameter, so with
+both on an avatar only one is out at a time: taking one out puts the other
+away.
 
 VRChat ranks an avatar with any light on it as Poor, enabled or not, and
-with two as Very Poor. `Wirenook Light` therefore draws a beam cone and a
-glow without lighting anything. `Wirenook Light (Real Light)` leaves that
-geometry out and shines an actual light instead, for when you need to see
-in a dark world and accept the rank. Both tools share its single light. A
-light's type cannot be animated, so it is a spotlight either way: narrow
-and along the flashlight, or wide and downward from the lantern's flame.
+with two as Very Poor. The plain builds therefore draw a beam cone and a
+glow without lighting anything. The Real Light builds leave that geometry
+out and shine an actual light, for when you need to see in a dark world and
+accept the rank: a spotlight in the flashlight, a point light in the
+lantern. Put at most one of them on an avatar. They cannot share a light,
+because a light's type cannot be animated and a spotlight cannot stand in
+for a point light.
 
-The real light has a "Place" switch that leaves the tool standing where
-your hand is, lit, and picks it up again. The placed position is synced
-(see `net.wirenook.world-sync`), so people who arrive later see it where
-you left it. Putting the light away picks it up too. The plain build cannot
-be placed: it is part of the avatar's mesh, which is what keeps it free in
-performance rank, and a merged mesh disappears whenever the avatar is out
-of view.
+A Real Light build has a "Place" switch that leaves the tool where your
+hand is, lit, and picks it up again. The placed position is synced (see
+`net.wirenook.world-sync`), so people who arrive later see it where you
+left it. Putting the tool away picks it up too. The plain builds cannot be
+placed: they are part of the avatar's mesh, which is what keeps them free
+in performance rank, and a merged mesh disappears whenever the avatar is
+out of view.
 
 ### Screen notices
 
@@ -86,6 +91,15 @@ picking another, skips straight to the fade-out; a card that is still
 fading in finishes that first. The cards are drawn from `Textures/notices.json` by
 `tools/notice_atlas.py`; add your own by appending to that list and
 rebuilding.
+
+### Android and iOS
+
+In a build for Android or iOS (see `net.wirenook.assets`), the laser
+pointer, megaphone and plain flashlight and lantern are kept, with VRChat's
+mobile shaders and without sound. The notices and the Real Light builds are
+left out: mobile avatars may not use a custom shader, and VRChat switches
+their lights off. Their parameters stay, so the avatar syncs the same way
+on every platform.
 
 ## Limits and unknowns
 
