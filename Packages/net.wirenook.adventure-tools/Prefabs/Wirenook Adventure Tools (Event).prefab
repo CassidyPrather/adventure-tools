@@ -1,0 +1,541 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4013873119358216154
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5492018328365338160}
+  - component: {fileID: 3922796736010115186}
+  - component: {fileID: 9095163485001770124}
+  m_Layer: 0
+  m_Name: Wirenook Adventure Tools (Event)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5492018328365338160
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4013873119358216154}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2337808609981240642}
+  - {fileID: 9093289215715611890}
+  - {fileID: 1489292351437510763}
+  - {fileID: 6341271937046488962}
+  - {fileID: 7364047636470576557}
+  - {fileID: 513524224942755076}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3922796736010115186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4013873119358216154}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ef83cb0c23d4d7c9d41021e544a1978, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _modularAvatarVersionTag:
+    UpdatedAtVersion: 1.18.7
+    MinimumVersion: 1.18.0
+  menuToAppend: {fileID: 0}
+  installTargetMenu: {fileID: 0}
+--- !u!114 &9095163485001770124
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4013873119358216154}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b29d45007c5493d926d2cd45a489529, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _modularAvatarVersionTag:
+    UpdatedAtVersion: 1.18.7
+    MinimumVersion: 1.18.0
+  Control:
+    name: Tools
+    icon: {fileID: 2800000, guid: 106079bd53ebb654f9c463d07c233767, type: 3}
+    type: 103
+    parameter:
+      name: 
+    value: 1
+    style: 0
+    subMenu: {fileID: 0}
+    subParameters: []
+    labels: []
+  MenuSource: 1
+  menuSource_otherObjectChildren: {fileID: 0}
+  isSynced: 1
+  isSaved: 0
+  isDefault: 0
+  automaticValue: 0
+  label: Tools
+--- !u!1001 &2438546423564475649
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 5492018328365338160}
+    m_Modifications:
+    - target: {fileID: 5180598908891310252, guid: 6ed7f69f6c3b76f49a4026b3295b1bf7,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5180598908891310252, guid: 6ed7f69f6c3b76f49a4026b3295b1bf7,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5180598908891310252, guid: 6ed7f69f6c3b76f49a4026b3295b1bf7,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5180598908891310252, guid: 6ed7f69f6c3b76f49a4026b3295b1bf7,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5180598908891310252, guid: 6ed7f69f6c3b76f49a4026b3295b1bf7,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5180598908891310252, guid: 6ed7f69f6c3b76f49a4026b3295b1bf7,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5180598908891310252, guid: 6ed7f69f6c3b76f49a4026b3295b1bf7,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5180598908891310252, guid: 6ed7f69f6c3b76f49a4026b3295b1bf7,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5180598908891310252, guid: 6ed7f69f6c3b76f49a4026b3295b1bf7,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5180598908891310252, guid: 6ed7f69f6c3b76f49a4026b3295b1bf7,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5229035525309993162, guid: 6ed7f69f6c3b76f49a4026b3295b1bf7,
+        type: 3}
+      propertyPath: m_Name
+      value: Wirenook Notice
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 4492288843508197640, guid: 6ed7f69f6c3b76f49a4026b3295b1bf7, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 6ed7f69f6c3b76f49a4026b3295b1bf7, type: 3}
+--- !u!4 &7364047636470576557 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5180598908891310252, guid: 6ed7f69f6c3b76f49a4026b3295b1bf7,
+    type: 3}
+  m_PrefabInstance: {fileID: 2438546423564475649}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &3840433154376218172
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 5492018328365338160}
+    m_Modifications:
+    - target: {fileID: 3633158142985993016, guid: d7d0de5f2e6ab094daab1d0f86da0a29,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3633158142985993016, guid: d7d0de5f2e6ab094daab1d0f86da0a29,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3633158142985993016, guid: d7d0de5f2e6ab094daab1d0f86da0a29,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3633158142985993016, guid: d7d0de5f2e6ab094daab1d0f86da0a29,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3633158142985993016, guid: d7d0de5f2e6ab094daab1d0f86da0a29,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3633158142985993016, guid: d7d0de5f2e6ab094daab1d0f86da0a29,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3633158142985993016, guid: d7d0de5f2e6ab094daab1d0f86da0a29,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3633158142985993016, guid: d7d0de5f2e6ab094daab1d0f86da0a29,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3633158142985993016, guid: d7d0de5f2e6ab094daab1d0f86da0a29,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3633158142985993016, guid: d7d0de5f2e6ab094daab1d0f86da0a29,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4851335519445133089, guid: d7d0de5f2e6ab094daab1d0f86da0a29,
+        type: 3}
+      propertyPath: m_Name
+      value: Wirenook Beacon
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 7783987374475270418, guid: d7d0de5f2e6ab094daab1d0f86da0a29, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: d7d0de5f2e6ab094daab1d0f86da0a29, type: 3}
+--- !u!4 &513524224942755076 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3633158142985993016, guid: d7d0de5f2e6ab094daab1d0f86da0a29,
+    type: 3}
+  m_PrefabInstance: {fileID: 3840433154376218172}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &4927709815965304115
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 5492018328365338160}
+    m_Modifications:
+    - target: {fileID: 1963120859397211380, guid: a7fec66c01925544cacbdf50e3e9fb8a,
+        type: 3}
+      propertyPath: m_Name
+      value: Wirenook Flashlight
+      objectReference: {fileID: 0}
+    - target: {fileID: 5821389022055030104, guid: a7fec66c01925544cacbdf50e3e9fb8a,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5821389022055030104, guid: a7fec66c01925544cacbdf50e3e9fb8a,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5821389022055030104, guid: a7fec66c01925544cacbdf50e3e9fb8a,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5821389022055030104, guid: a7fec66c01925544cacbdf50e3e9fb8a,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5821389022055030104, guid: a7fec66c01925544cacbdf50e3e9fb8a,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5821389022055030104, guid: a7fec66c01925544cacbdf50e3e9fb8a,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5821389022055030104, guid: a7fec66c01925544cacbdf50e3e9fb8a,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5821389022055030104, guid: a7fec66c01925544cacbdf50e3e9fb8a,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5821389022055030104, guid: a7fec66c01925544cacbdf50e3e9fb8a,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5821389022055030104, guid: a7fec66c01925544cacbdf50e3e9fb8a,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 2326789019435046243, guid: a7fec66c01925544cacbdf50e3e9fb8a, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: a7fec66c01925544cacbdf50e3e9fb8a, type: 3}
+--- !u!4 &1489292351437510763 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5821389022055030104, guid: a7fec66c01925544cacbdf50e3e9fb8a,
+    type: 3}
+  m_PrefabInstance: {fileID: 4927709815965304115}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &5523277558647245524
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 5492018328365338160}
+    m_Modifications:
+    - target: {fileID: 6350029687575131849, guid: ff5dde5f7d3052a41ae2550191a9d730,
+        type: 3}
+      propertyPath: m_Name
+      value: Wirenook Laser Pointer (Ping)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7842753933746790294, guid: ff5dde5f7d3052a41ae2550191a9d730,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7842753933746790294, guid: ff5dde5f7d3052a41ae2550191a9d730,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7842753933746790294, guid: ff5dde5f7d3052a41ae2550191a9d730,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7842753933746790294, guid: ff5dde5f7d3052a41ae2550191a9d730,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7842753933746790294, guid: ff5dde5f7d3052a41ae2550191a9d730,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7842753933746790294, guid: ff5dde5f7d3052a41ae2550191a9d730,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7842753933746790294, guid: ff5dde5f7d3052a41ae2550191a9d730,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7842753933746790294, guid: ff5dde5f7d3052a41ae2550191a9d730,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7842753933746790294, guid: ff5dde5f7d3052a41ae2550191a9d730,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7842753933746790294, guid: ff5dde5f7d3052a41ae2550191a9d730,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 5123147728435998367, guid: ff5dde5f7d3052a41ae2550191a9d730, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: ff5dde5f7d3052a41ae2550191a9d730, type: 3}
+--- !u!4 &2337808609981240642 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7842753933746790294, guid: ff5dde5f7d3052a41ae2550191a9d730,
+    type: 3}
+  m_PrefabInstance: {fileID: 5523277558647245524}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &7592797416340497936
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 5492018328365338160}
+    m_Modifications:
+    - target: {fileID: 666323502450727631, guid: 01f4f3a69c2f5634b8b3c49b0bf669b1,
+        type: 3}
+      propertyPath: m_Name
+      value: Wirenook Megaphone
+      objectReference: {fileID: 0}
+    - target: {fileID: 1688519287685526242, guid: 01f4f3a69c2f5634b8b3c49b0bf669b1,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1688519287685526242, guid: 01f4f3a69c2f5634b8b3c49b0bf669b1,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1688519287685526242, guid: 01f4f3a69c2f5634b8b3c49b0bf669b1,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1688519287685526242, guid: 01f4f3a69c2f5634b8b3c49b0bf669b1,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1688519287685526242, guid: 01f4f3a69c2f5634b8b3c49b0bf669b1,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1688519287685526242, guid: 01f4f3a69c2f5634b8b3c49b0bf669b1,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1688519287685526242, guid: 01f4f3a69c2f5634b8b3c49b0bf669b1,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1688519287685526242, guid: 01f4f3a69c2f5634b8b3c49b0bf669b1,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1688519287685526242, guid: 01f4f3a69c2f5634b8b3c49b0bf669b1,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1688519287685526242, guid: 01f4f3a69c2f5634b8b3c49b0bf669b1,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 2405123982458325299, guid: 01f4f3a69c2f5634b8b3c49b0bf669b1, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 01f4f3a69c2f5634b8b3c49b0bf669b1, type: 3}
+--- !u!4 &9093289215715611890 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1688519287685526242, guid: 01f4f3a69c2f5634b8b3c49b0bf669b1,
+    type: 3}
+  m_PrefabInstance: {fileID: 7592797416340497936}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &9171001913917618032
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 5492018328365338160}
+    m_Modifications:
+    - target: {fileID: 123714845806574637, guid: b336e3f713080cd4e889453825142377,
+        type: 3}
+      propertyPath: m_Name
+      value: Wirenook Lantern
+      objectReference: {fileID: 0}
+    - target: {fileID: 2829747776776278258, guid: b336e3f713080cd4e889453825142377,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2829747776776278258, guid: b336e3f713080cd4e889453825142377,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2829747776776278258, guid: b336e3f713080cd4e889453825142377,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2829747776776278258, guid: b336e3f713080cd4e889453825142377,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2829747776776278258, guid: b336e3f713080cd4e889453825142377,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2829747776776278258, guid: b336e3f713080cd4e889453825142377,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2829747776776278258, guid: b336e3f713080cd4e889453825142377,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2829747776776278258, guid: b336e3f713080cd4e889453825142377,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2829747776776278258, guid: b336e3f713080cd4e889453825142377,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2829747776776278258, guid: b336e3f713080cd4e889453825142377,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 6090298184959611847, guid: b336e3f713080cd4e889453825142377, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: b336e3f713080cd4e889453825142377, type: 3}
+--- !u!4 &6341271937046488962 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2829747776776278258, guid: b336e3f713080cd4e889453825142377,
+    type: 3}
+  m_PrefabInstance: {fileID: 9171001913917618032}
+  m_PrefabAsset: {fileID: 0}

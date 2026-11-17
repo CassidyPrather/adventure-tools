@@ -1,4 +1,4 @@
-"""Builds the adventure-tools props: flashlight, lantern, megaphone, laser pointer.
+"""Builds the adventure-tools props: flashlight, lantern, megaphone, laser pointer, ping marker.
 
     blender -b --python blender/build_props.py [-- --only STEM] [-- --previews DIR]
 
@@ -213,11 +213,42 @@ def build_laser_pointer(mesh):
     return {"Beam": ahead(tip), "Dot": ahead(tip)}
 
 
+# --------------------------------------------------------------------------
+# Ping
+# --------------------------------------------------------------------------
+
+PING = PropSpec("Ping", "ping", triangle_budget=160, materials=(GLOW,))
+
+
+def build_ping(mesh):
+    """A marker for a spot someone pointed at: its origin is the spot.
+
+    One bone and one material, because it is left standing in the world as a
+    mesh of its own and every further part would be another. All of it repeats
+    every quarter turn about the vertical, so it can spin through 90 degrees
+    in a loop without a seam.
+    """
+    marker = mesh.part(None, GLOW)
+    # A gem hovering over the spot, point down.
+    marker.lathe(UP * 0.0, UP, [(0.16, 0.0), (0.37, 0.085), (0.46, 0.0)],
+                 ["glow-magenta", "glow-white"], segments=4)
+    # Two rings on the surface around it. The outer one has a little height
+    # so that it shows from below as well, pointed at a ceiling.
+    marker.lathe(UP * 0.0, UP, [(0.0, 0.21), (0.0, 0.27), (0.008, 0.27), (0.008, 0.21), (0.0, 0.21)],
+                 "glow-magenta", segments=12)
+    marker.lathe(UP * 0.0, UP, [(0.004, 0.125), (0.004, 0.095)], "glow-white", segments=12)
+    # A thin column above it, to find the spot by from across a room.
+    marker.lathe(UP * 0.0, UP, [(0.62, 0.011), (3.0, 0.011)], "glow-cyan", segments=4,
+                 cap_start="glow-cyan", cap_end="glow-cyan")
+    return {}
+
+
 PROPS = [
     (FLASHLIGHT, build_flashlight),
     (LANTERN, build_lantern),
     (MEGAPHONE, build_megaphone),
     (LASER_POINTER, build_laser_pointer),
+    (PING, build_ping),
 ]
 
 if __name__ == "__main__":

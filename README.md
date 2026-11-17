@@ -16,15 +16,19 @@ and animator at build time. Each tool works on its own, and
 `Wirenook Adventure Tools` puts the plain ones behind one "Tools" menu
 entry. `Wirenook Adventure Tools (Real Flashlight)` and `(Real Lantern)`
 are the same set with that one tool as a real light and without the other.
+`Wirenook Adventure Tools (Event)` is the plain set for whoever is leading a
+group: its laser pointer can ping, and it adds the beacon.
 
 | Prefab | Hand | What it does | Synced bits | Rank cost |
 | --- | --- | --- | --- | --- |
 | `Wirenook Laser Pointer` | Right | A beam from the pointer's tip to whatever it hits, with a dot on the surface. | 1 | 1 raycast |
+| `Wirenook Laser Pointer (Ping)` | Right | The same, and a click leaves a marker on the spot it points at for four seconds, with a chirp. | 2 | 1 raycast, 1 mesh, 1 material slot, 1 audio source, 1 constraint |
 | `Wirenook Megaphone` | Right | A megaphone with pulsing sound waves and a two-tone bleep when raised. | 1 | 1 audio source |
 | `Wirenook Flashlight` | Left | A torch with a visible beam. It does not light the world. | 8, shared | none |
 | `Wirenook Lantern` | Left | A lantern that swings from its handle and glows. It does not light the world. | 8, shared | 1 PhysBone |
 | `Wirenook Flashlight (Real Light)` | Left | The torch with a real spotlight. Can be placed in the world. | 58 | 1 light: the avatar ranks **Poor**; 1 mesh, constraints and contacts |
 | `Wirenook Lantern (Real Light)` | Left | The lantern with a real point light. Can be placed in the world. | 58 | 1 light: the avatar ranks **Poor**; 2 meshes, 1 PhysBone, constraints and contacts |
+| `Wirenook Beacon` | | A pin over your head that shows through walls, and an arrow in everyone else's view that points the way to you when the pin is out of it. | 1 | 1 mesh, 1 material slot; bounds of 160 m while it is on |
 | `Wirenook Notice` | | Eight notices ("Portal dropping", "Respawn", ...) shown on the screen of everyone who can see you, with a chime. | 8 | 1 audio source, 1 mesh, larger bounds |
 
 Tools appear with a small pop and shrink away rather than blinking in and
@@ -48,6 +52,44 @@ there if you like.
 Uses the SDK's `VRCRaycast` (version 1.1), which runs on every viewer's
 own client, so the beam length needs no synced parameters. It reaches 30 m
 and hits world geometry and other players.
+
+**Ping.** In the `(Ping)` build, closing the right hand into a fist while
+the pointer is out (a trigger pull, on most controllers) stands a marker on
+the spot the dot is on: a gem over two rings, with a thin column above it
+to find it by from across a room. It lasts four seconds. The menu has a
+"Ping" button as well, for controllers that track fingers and so never make
+a fist by themselves, or always do. A ray that hits nothing does not ping.
+
+One synced bit says "ping now", and every viewer's client stands the marker
+where its own copy of the laser's dot is when that bit arrives. Hold the
+hand still through the click and that is the same spot for everyone. Click
+while sweeping and each viewer's marker lands wherever the dot had got to on
+their screen, a network delay later. A marker that agreed exactly would need
+a synced position (see `net.wirenook.world-sync`): sixty-six bits, and more
+than half a second before it showed.
+
+The marker stays put while the hand moves on, so it cannot be part of the
+avatar's mesh. That is one mesh and one material slot, which is why the
+plain build exists.
+
+### Beacon
+
+`Wirenook/Beacon` draws two things for everyone but you. A pin stands over
+your head, in front of everything, and never gets smaller on screen than
+about a twenty-fifth of its distance, so it can be picked out across a
+large world. When the pin is out of someone's view, an arrow near the centre
+of their view points the way to turn; for someone behind them it points
+sideways, the way people turn round. Both fade out within three metres, where
+they would only be in the way, and stop at 80 m. The arrow does not draw in
+mirrors, handheld cameras or screenshots. Both are drawn from distance
+functions in the shader; there is no texture.
+
+Unity only draws a mesh whose bounds are in view, and the arrow is for
+exactly when you are not, so the mesh's bounds are 160 m across. The object
+rests switched off and scaled to nothing, which makes those bounds a point:
+an avatar with the beacon off is no larger to cull or to rank than one
+without it. While it is on, viewers within range draw two triangles for it
+wherever they look.
 
 ### Flashlight, lantern and real light
 
@@ -95,8 +137,8 @@ rebuilding.
 ### Android and iOS
 
 In a build for Android or iOS (see `net.wirenook.assets`), every tool is
-kept except the notices, which are drawn by a custom shader that mobile
-avatars may not use. The tools get VRChat's mobile shaders and lose their
+kept except the notices and the beacon, which are drawn by custom shaders
+that mobile avatars may not use. The tools get VRChat's mobile shaders and lose their
 sound, and a Real Light build loses its light, since VRChat disables audio
 sources and lights on mobile avatars: the tool is still held and can still
 be placed, dark. Parameters stay as they are, so the avatar syncs the same
@@ -108,6 +150,14 @@ way on every platform.
   checked in the Unity editor, not in a headset.
 - The real light, its placing and the reworked notice fades have only been
   checked in the Unity editor.
+- The ping and the beacon have only been checked in the Unity editor: that
+  they build, and where the beacon's shader puts the pin and the arrow from
+  a set of camera positions. Whether a fist is a comfortable "click" on real
+  controllers, how far apart viewers' markers land, and how the arrow sits
+  in a headset are all untried.
+- Whether the client caps a mesh's bounds on avatars has not been checked.
+  If it does, the beacon's arrow only shows while the avatar is near the
+  edge of view.
 - The tools do not pose your fingers around them.
 
 ## Rebuilding the generated assets

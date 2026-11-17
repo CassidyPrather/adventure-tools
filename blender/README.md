@@ -8,6 +8,7 @@ Each prop is generated from code, saved here as `.blend`, validated, exported as
 | `flashlight.blend` | `Flashlight`: hand torch, 0.16 m | `Flashlight` (grip centre), `Flashlight.Beam` (lens centre) | Beam: open cone, 1.0 m long, 0.35 m radius at far end |
 | `lantern.blend` | `Lantern`: camping and paper lantern on ring handle | `Lantern` (top of handle), `Lantern.Body` (handle pivot), `Lantern.Glow` (core centre, child of Body) | Body swings from the pivot. Glow: halo sphere, 0.16 m radius |
 | `megaphone.blend` | `Megaphone`: toy megaphone, 0.28 m | `Megaphone` (pistol grip), `Megaphone.Waves` (horn mouth) | Waves: three shells growing away from the horn |
+| `ping.blend` | `Ping`: marker for a pointed-at spot, 0.54 m across, 3 m tall | `Ping` (the spot) | All light, one material. Repeats every quarter turn about the vertical, so it can spin 90 degrees in a loop |
 | `laser-pointer.blend` | `LaserPointer`: pen pointer, 0.13 m | `LaserPointer` (grip centre), `LaserPointer.Beam`, `LaserPointer.Dot` (both at tip) | Beam: 4 mm thick, exactly 1.0 m. Dot: 3 cm sparkle facing back |
 
 ## Rebuild

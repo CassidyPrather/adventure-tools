@@ -7,6 +7,7 @@ using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
 using VRC.SDK3.Avatars.Components;
+using VRC.SDK3.Dynamics.Constraint.Components;
 using VRC.SDK3.Dynamics.PhysBone.Components;
 using VRC.SDKBase;
 using Wirenook.Assets;
@@ -34,10 +35,13 @@ namespace Wirenook.AdventureTools.Editor
         public const string LanternRealPrefab = Prefabs + "/Wirenook Lantern (Real Light).prefab";
         public const string MegaphonePrefab = Prefabs + "/Wirenook Megaphone.prefab";
         public const string LaserPrefab = Prefabs + "/Wirenook Laser Pointer.prefab";
+        public const string LaserPingPrefab = Prefabs + "/Wirenook Laser Pointer (Ping).prefab";
         public const string NoticePrefab = Prefabs + "/Wirenook Notice.prefab";
+        public const string BeaconPrefab = Prefabs + "/Wirenook Beacon.prefab";
         public const string BundlePrefab = Prefabs + "/Wirenook Adventure Tools.prefab";
         public const string BundleFlashlightPrefab = Prefabs + "/Wirenook Adventure Tools (Real Flashlight).prefab";
         public const string BundleLanternPrefab = Prefabs + "/Wirenook Adventure Tools (Real Lantern).prefab";
+        public const string BundleEventPrefab = Prefabs + "/Wirenook Adventure Tools (Event).prefab";
 
         /// <summary>
         /// Which light is out: 0 none, 1 the flashlight, 2 the lantern. Both
@@ -92,6 +96,11 @@ namespace Wirenook.AdventureTools.Editor
         /// <summary>How far the laser reaches, in metres.</summary>
         private const float LaserRange = 30f;
 
+        /// <summary>How long a ping stays up, in turns of its one-second loop.</summary>
+        private const int PingLoops = 4;
+
+        private const string PingParameter = "WN/Ping";
+
         /// <summary>How long a notice stays up between fading in and out, in seconds.</summary>
         private const float NoticeSeconds = 3.85f;
         private const float NoticeFadeIn = 0.25f;
@@ -117,11 +126,14 @@ namespace Wirenook.AdventureTools.Editor
             }
 
             Megaphone();
-            LaserPointer();
+            LaserPointer(ping: false);
+            LaserPointer(ping: true);
             Notice();
-            Bundle(BundlePrefab, FlashlightPrefab, LanternPrefab);
-            Bundle(BundleFlashlightPrefab, FlashlightRealPrefab);
-            Bundle(BundleLanternPrefab, LanternRealPrefab);
+            Beacon();
+            Bundle(BundlePrefab, LaserPrefab, MegaphonePrefab, FlashlightPrefab, LanternPrefab, NoticePrefab);
+            Bundle(BundleFlashlightPrefab, LaserPrefab, MegaphonePrefab, FlashlightRealPrefab, NoticePrefab);
+            Bundle(BundleLanternPrefab, LaserPrefab, MegaphonePrefab, LanternRealPrefab, NoticePrefab);
+            Bundle(BundleEventPrefab, LaserPingPrefab, MegaphonePrefab, FlashlightPrefab, LanternPrefab, NoticePrefab, BeaconPrefab);
             AssetDatabase.SaveAssets();
             Debug.Log("[adventure-tools] Rebuilt prefabs and animators.");
         }
@@ -355,11 +367,21 @@ namespace Wirenook.AdventureTools.Editor
             });
         }
 
-        public static void LaserPointer()
+        /// <summary>
+        /// Builds the laser pointer, in one of two builds.
+        ///
+        /// The plain one is a beam and a dot, joins the avatar's mesh and
+        /// costs nothing in performance rank. The other can also ping: a
+        /// click leaves a marker standing on the spot the dot is on for a few
+        /// seconds. A marker that stays put while the hand moves on has to be
+        /// a mesh of its own, so that build costs a mesh, a material slot and
+        /// an audio source.
+        /// </summary>
+        public static void LaserPointer(bool ping)
         {
             const string parameter = "WN/Laser";
             const string ray = "WN/LaserRay";
-            FeaturePrefab.Edit(LaserPrefab, root =>
+            FeaturePrefab.Edit(ping ? LaserPingPrefab : LaserPrefab, root =>
             {
                 var model = HeldModel(root, "laser-pointer.fbx", HumanBodyBones.RightHand);
                 var body = FeaturePrefab.PathTo(root, FeaturePrefab.Bone(model, "LaserPointer"));
@@ -384,7 +406,7 @@ namespace Wirenook.AdventureTools.Editor
                 serialized.FindProperty("parameter").stringValue = ray;
                 serialized.ApplyModifiedPropertiesWithoutUndo();
 
-                var fx = ControllerBuilder.Rebuild(Generated + "/laser-pointer-fx.controller");
+                var fx = ControllerBuilder.Rebuild(Generated + (ping ? "/laser-pointer-ping-fx.controller" : "/laser-pointer-fx.controller"));
                 PopToggle.Layer(fx, "Laser Pointer", parameter, body);
 
                 // The beam mesh is one metre long, so stretching its bone along
@@ -408,20 +430,131 @@ namespace Wirenook.AdventureTools.Editor
                     PopToggle.Scale(clip, dotPath, AnimationCurve.Constant(0f, 1f / 60f, 1f))));
                 hidden.To(shown).IfTrue(ray + "_Hit");
                 shown.To(hidden).IfFalse(ray + "_Hit");
+                if (ping) Ping(root, fx, dot, parameter, ray + "_Hit");
                 fx.Save();
 
-                FeaturePrefab.Merge(root, fx.Controller);
-                FeaturePrefab.Parameters(root,
+                var parameters = new List<ParameterConfig>
+                {
                     FeaturePrefab.SyncedBool(parameter),
                     // Each viewer's client casts the ray itself; nothing to sync.
-                    Unsynced(ray + "_Ratio"), Unsynced(ray + "_Hit"), Unsynced(ray + "_Distance"));
+                    Unsynced(ray + "_Ratio"), Unsynced(ray + "_Hit"), Unsynced(ray + "_Distance"),
+                };
+                if (ping) parameters.Add(FeaturePrefab.SyncedBool(PingParameter));
+
+                FeaturePrefab.Merge(root, fx.Controller);
+                FeaturePrefab.Parameters(root, parameters.ToArray());
                 FeaturePrefab.InstallMenu(root);
-                FeaturePrefab.MenuToggle(root, "Laser Pointer", "laser-pointer", parameter);
+                if (ping)
+                {
+                    FeaturePrefab.MenuFolder(root, "Laser Pointer", "laser-pointer");
+                    FeaturePrefab.MenuToggle(FeaturePrefab.Child(root, "Menu Hold"), "Laser Pointer", "laser-pointer", parameter);
+                    // For hands whose controller never makes a fist on its own.
+                    FeaturePrefab.MenuButton(FeaturePrefab.Child(root, "Menu Ping"), "Ping", "world-anchor", PingParameter);
+                }
+                else
+                {
+                    FeaturePrefab.MenuToggle(root, "Laser Pointer", "laser-pointer", parameter);
+                }
+
                 // On a thumbnail the pointer, the megaphone and the notices are one
                 // thing: ways to get a group's attention.
-                FeaturePrefab.Describe(root, "laser-pointer", "Laser pointer", "laser-pointer", "laser pointer", 40,
-                    joinAvatarMesh: true, summaryIcon: "megaphone");
+                FeaturePrefab.Describe(root, "laser-pointer", ping ? "Laser pointer with ping" : "Laser pointer", "laser-pointer",
+                    "laser pointer", 40, joinAvatarMesh: true, summaryIcon: "megaphone");
             });
+        }
+
+        /// <summary>
+        /// Clicking with the laser out leaves a marker on the spot it points
+        /// at. "Clicking" is closing the right hand into a fist, which is what
+        /// a trigger pull is on most controllers; the menu has a button for
+        /// the rest.
+        ///
+        /// One synced bit says "ping now". Every viewer's client casts the
+        /// laser's ray itself, so each one stands the marker where its own
+        /// dot is at the moment the bit arrives. With the hand held still
+        /// through the click that is the same spot for everyone; a hand that
+        /// is sweeping when it clicks spreads the marker along the sweep by
+        /// however far it travels during the network delay. A marker that
+        /// agreed exactly would need a synced anchor: sixty-six bits and
+        /// over half a second before it showed, for something that is gone
+        /// in four.
+        /// </summary>
+        private static void Ping(GameObject root, ControllerBuilder fx, Transform dot, string laserParameter, string hitParameter)
+        {
+            // Under the feature root, not the hand, so it stands upright
+            // however the hand is turned; the constraint only moves it.
+            var anchor = FeaturePrefab.Child(root, "Ping Anchor");
+            var follow = FeaturePrefab.Ensure<VRCPositionConstraint>(anchor);
+            follow.ClearSources();
+            follow.AddSource(new VRCConstraintSource { SourceTransform = dot, Weight = 1f });
+            follow.PositionOffset = Vector3.zero;
+            follow.IsActive = true;
+            // Unlocked constraints re-measure their offset instead of moving the object.
+            follow.Locked = true;
+            follow.FreezeToWorld = false;
+            follow.RebakeOffsetsWhenUnfrozen = false;
+
+            var model = RigidProp.Build(anchor, Models + "/ping.fbx", Generated);
+            var marker = FeaturePrefab.Find(model, "Ping");
+            var anchorPath = FeaturePrefab.PathTo(root, anchor.transform);
+            var markerPath = FeaturePrefab.PathTo(root, marker);
+
+            // Heard from the spot itself, and from further off than the
+            // other cues: it is there to be found.
+            WirenookSounds.Source(anchor).GetComponent<VRCSpatialAudioSource>().Far = LaserRange;
+
+            fx.Bool(PingParameter).Bool("IsLocal").Int("GestureRight");
+
+            AnimationClip Marker(string name, bool standing, AnimationCurve scale, System.Action<ClipBuilder> more = null) =>
+                fx.Clip("ping " + name, clip =>
+                {
+                    clip.Constant(anchorPath, typeof(VRCPositionConstraint), "FreezeToWorld", standing ? 1f : 0f,
+                        scale[scale.length - 1].time);
+                    PopToggle.Scale(clip, markerPath, scale);
+                    more?.Invoke(clip);
+                });
+
+            // The model repeats every quarter turn, so a quarter turn a
+            // second loops without a seam.
+            var throb = new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(0.5f, 1.12f), new Keyframe(1f, 1f));
+            for (var key = 0; key < throb.length; key++) throb.SmoothTangents(key, 0f);
+
+            var layer = fx.Layer("Laser Ping");
+            var idle = layer.State("Idle", Marker("idle", false, AnimationCurve.Constant(0f, 1f / 60f, 0f)));
+            var appear = layer.State("Appear", Marker("appear", true, PopToggle.Overshoot(0f, 1f, PopToggle.AppearSeconds)));
+            var stand = layer.State("Stand", Marker("stand", true, throb, clip => clip
+                .Curve(markerPath, typeof(Transform), "localEulerAnglesRaw.y", AnimationCurve.Linear(0f, 0f, 1f, 90f))
+                .Loop()));
+            var leave = layer.State("Leave", Marker("leave", true, PopToggle.Overshoot(1f, 0f, PopToggle.DisappearSeconds)));
+            var done = layer.State("Done", Marker("done", false, AnimationCurve.Constant(0f, 1f / 60f, 0f)));
+            WirenookSounds.PlayOnEnter(appear, anchorPath + "/" + WirenookSounds.SourceName, "ping");
+
+            // The wearer's client ends the ping; everyone else waits for that
+            // to sync, so one ping can never play twice on a slow connection.
+            done.Behaviour<VRCAvatarParameterDriver>(driver => SetLocally(driver, PingParameter, 0f));
+            idle.To(appear).IfTrue(PingParameter);
+            appear.To(stand).AfterTime(1f);
+            stand.To(leave).AfterTime(PingLoops);
+            leave.To(done).AfterTime(1f);
+            done.To(idle).IfFalse(PingParameter);
+
+            // The click. It fires once per fist, and only at something: a ray
+            // that hits nothing ends in mid-air at the laser's full reach.
+            var trigger = fx.Layer("Laser Ping Click");
+            var ready = trigger.State("Ready");
+            var fire = trigger.State("Fire");
+            fire.Behaviour<VRCAvatarParameterDriver>(driver => SetLocally(driver, PingParameter, 1f));
+            ready.To(fire).IfTrue("IsLocal").IfTrue(laserParameter).IfTrue(hitParameter).IfFalse(PingParameter).Equal("GestureRight", 1);
+            fire.To(ready).NotEqual("GestureRight", 1);
+        }
+
+        private static void SetLocally(VRCAvatarParameterDriver driver, string parameter, float value)
+        {
+            driver.localOnly = true;
+            driver.parameters = new List<VRC_AvatarParameterDriver.Parameter>
+            {
+                new VRC_AvatarParameterDriver.Parameter { type = VRC_AvatarParameterDriver.ChangeType.Set, name = parameter, value = value },
+            };
         }
 
         private static ParameterConfig Unsynced(string name)
@@ -552,19 +685,108 @@ namespace Wirenook.AdventureTools.Editor
             });
         }
 
+        /// <summary>How far away the beacon can be seen from, in metres.</summary>
+        private const float BeaconRange = 80f;
+
+        private const float BeaconFade = 0.25f;
+
         /// <summary>
-        /// All the tools behind one "Tools" entry, so adding the set costs an
+        /// A pin over the wearer's head that shows through walls, and an
+        /// arrow in everyone else's view that points the way to turn when the
+        /// pin is out of it: for whoever is leading a group through a world
+        /// where people get separated.
+        /// </summary>
+        public static void Beacon()
+        {
+            const string parameter = "WN/Beacon";
+            const string markName = "Mark";
+
+            var shader = Shader.Find("Wirenook/Beacon");
+            var material = AssetFolders.LoadOrCreate(Generated + "/beacon.mat", () => new Material(shader));
+            material.shader = shader;
+            material.SetFloat("_Show", 0f);
+            material.SetFloat("_Range", BeaconRange);
+            EditorUtility.SetDirty(material);
+
+            // Two quads: the pin, then the arrow. The shader places both and
+            // tells them apart by the second UV set.
+            var quads = AssetFolders.LoadOrCreate(Generated + "/beacon-quads.asset", () => new Mesh());
+            quads.Clear();
+            quads.name = "beacon-quads";
+            var corners = new[] { new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1) };
+            quads.vertices = corners.Concat(corners).Select(corner => new Vector3(corner.x - 0.5f, corner.y - 0.5f)).ToArray();
+            quads.uv = corners.Concat(corners).ToArray();
+            quads.uv2 = corners.Select(_ => Vector2.zero).Concat(corners.Select(_ => Vector2.right)).ToArray();
+            quads.triangles = new[] { 0, 2, 1, 0, 3, 2, 4, 6, 5, 4, 7, 6 };
+            // Unity only draws meshes whose bounds are in view, and the arrow
+            // is for exactly when the wearer is not. Bounds as large as the
+            // beacon's range keep it drawn wherever the viewer is looking.
+            quads.bounds = new Bounds(Vector3.zero, Vector3.one * (2f * BeaconRange));
+            EditorUtility.SetDirty(quads);
+
+            FeaturePrefab.Edit(BeaconPrefab, root =>
+            {
+                var mount = FeaturePrefab.Child(root, Mount);
+                FeaturePrefab.AttachToBone(mount, HumanBodyBones.Head);
+                var mark = FeaturePrefab.Child(mount, markName);
+                FeaturePrefab.Ensure<MeshFilter>(mark).sharedMesh = quads;
+                var renderer = FeaturePrefab.Ensure<MeshRenderer>(mark);
+                renderer.sharedMaterial = material;
+                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                renderer.receiveShadows = false;
+                mark.SetActive(false);
+                var markPath = FeaturePrefab.PathTo(root, mark.transform);
+
+                var fx = ControllerBuilder.Rebuild(Generated + "/beacon-fx.controller");
+                fx.Bool(parameter).Bool("IsLocal");
+
+                // Switched off, the object is inactive and scaled to nothing:
+                // at zero scale its bounds are a point, so a beacon that is
+                // not in use does not make the avatar any larger to cull, or
+                // to rank.
+                AnimationClip Mark(string name, bool present, AnimationCurve show) => fx.Clip("beacon " + name, clip =>
+                {
+                    var seconds = show[show.length - 1].time;
+                    clip.Active(markPath, AnimationCurve.Constant(0f, seconds, present ? 1f : 0f))
+                        .Material<MeshRenderer>(markPath, "_Show", show);
+                    PopToggle.Scale(clip, markPath, AnimationCurve.Constant(0f, seconds, present ? 1f : 0f));
+                });
+
+                var layer = fx.Layer("Beacon");
+                var off = layer.State("Off", Mark("off", false, AnimationCurve.Constant(0f, 1f / 60f, 0f)));
+                var appear = layer.State("Appear", Mark("appear", true, AnimationCurve.EaseInOut(0f, 0f, BeaconFade, 1f)));
+                var on = layer.State("On", Mark("on", true, AnimationCurve.Constant(0f, 1f / 60f, 1f)));
+                var disappear = layer.State("Disappear", Mark("disappear", true, AnimationCurve.EaseInOut(0f, 1f, BeaconFade, 0f)));
+                // Not for the wearer, who knows where they are; an arrow
+                // pointing at one's own head would only ever point down.
+                off.To(appear).IfTrue(parameter).IfFalse("IsLocal");
+                appear.To(on).AfterTime(1f);
+                on.To(disappear).IfFalse(parameter);
+                disappear.To(off).AfterTime(1f);
+                fx.Save();
+
+                FeaturePrefab.Merge(root, fx.Controller);
+                FeaturePrefab.Parameters(root, FeaturePrefab.SyncedBool(parameter));
+                FeaturePrefab.InstallMenu(root);
+                FeaturePrefab.MenuToggle(root, "Beacon", "world-anchor", parameter);
+                // Drawn by a shader of this package's own, and mobile builds
+                // may only use VRChat's.
+                FeaturePrefab.Describe(root, "beacon", "Beacon and compass", "world-anchor", "beacon", 35, pcOnly: true);
+            });
+        }
+
+        /// <summary>
+        /// A set of tools behind one "Tools" entry, so adding it costs an
         /// avatar a single slot in its top-level menu.
         /// </summary>
-        /// <param name="lightPrefabs">Which hand lights the set carries, and in which build.</param>
-        private static void Bundle(string bundlePath, params string[] lightPrefabs)
+        /// <param name="toolPrefabs">The tools the set carries, each in the build wanted, in menu order.</param>
+        private static void Bundle(string bundlePath, params string[] toolPrefabs)
         {
             FeaturePrefab.Edit(bundlePath, root =>
             {
                 FeaturePrefab.InstallMenu(root);
                 FeaturePrefab.MenuFolder(root, "Tools", "more");
-                var wanted = new[] { LaserPrefab, MegaphonePrefab }.Concat(lightPrefabs).Append(NoticePrefab)
-                    .Select(path => AssetDatabase.LoadAssetAtPath<GameObject>(path)).ToList();
+                var wanted = toolPrefabs.Select(path => AssetDatabase.LoadAssetAtPath<GameObject>(path)).ToList();
 
                 // A set built before the tools were rearranged holds ones that
                 // are no longer part of it.
