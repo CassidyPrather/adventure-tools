@@ -449,7 +449,7 @@ namespace Wirenook.AdventureTools.Editor
                     FeaturePrefab.MenuFolder(root, "Laser Pointer", "laser-pointer");
                     FeaturePrefab.MenuToggle(FeaturePrefab.Child(root, "Menu Hold"), "Laser Pointer", "laser-pointer", parameter);
                     // For hands whose controller never makes a fist on its own.
-                    FeaturePrefab.MenuButton(FeaturePrefab.Child(root, "Menu Ping"), "Ping", "world-anchor", PingParameter);
+                    FeaturePrefab.MenuButton(FeaturePrefab.Child(root, "Menu Ping"), "Ping", "ping", PingParameter);
                 }
                 else
                 {
@@ -768,10 +768,10 @@ namespace Wirenook.AdventureTools.Editor
                 FeaturePrefab.Merge(root, fx.Controller);
                 FeaturePrefab.Parameters(root, FeaturePrefab.SyncedBool(parameter));
                 FeaturePrefab.InstallMenu(root);
-                FeaturePrefab.MenuToggle(root, "Beacon", "world-anchor", parameter);
+                FeaturePrefab.MenuToggle(root, "Beacon", "beacon", parameter);
                 // Drawn by a shader of this package's own, and mobile builds
                 // may only use VRChat's.
-                FeaturePrefab.Describe(root, "beacon", "Beacon and compass", "world-anchor", "beacon", 35, pcOnly: true);
+                FeaturePrefab.Describe(root, "beacon", "Beacon and compass", "beacon", "beacon", 35, pcOnly: true);
             });
         }
 
