@@ -59,6 +59,10 @@ the spot the dot is on: a gem over two rings, with a thin column above it
 to find it by from across a room. It lasts four seconds. The menu has a
 "Ping" button as well, for controllers that track fingers and so never make
 a fist by themselves, or always do. A ray that hits nothing does not ping.
+The `(Ping)` build carries a `WirenookHandClaim` for the right hand while
+the pointer is out: an avatar that reads those shows no facial expression
+for that hand's gestures meanwhile, so the fist that pings is not also a
+face.
 
 One synced bit says "ping now", and every viewer's client stands the marker
 where its own copy of the laser's dot is when that bit arrives. Hold the

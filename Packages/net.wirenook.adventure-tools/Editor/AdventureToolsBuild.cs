@@ -430,7 +430,14 @@ namespace Wirenook.AdventureTools.Editor
                     PopToggle.Scale(clip, dotPath, AnimationCurve.Constant(0f, 1f / 60f, 1f))));
                 hidden.To(shown).IfTrue(ray + "_Hit");
                 shown.To(hidden).IfFalse(ray + "_Hit");
-                if (ping) Ping(root, fx, dot, parameter, ray + "_Hit");
+                if (ping)
+                {
+                    Ping(root, fx, dot, parameter, ray + "_Hit");
+                    // The fist that pings is a button while the pointer is out, not an expression.
+                    var claim = FeaturePrefab.Ensure<WirenookHandClaim>(root);
+                    claim.hand = WirenookHand.Right;
+                    claim.parameter = parameter;
+                }
                 fx.Save();
 
                 var parameters = new List<ParameterConfig>
@@ -643,7 +650,7 @@ namespace Wirenook.AdventureTools.Editor
                     var appear = layer.State(id, Card(id + " appear", i, AnimationCurve.EaseInOut(0f, 0f, NoticeFadeIn, 1f)));
                     var stay = layer.State(id + " (stay)", Card(id + " stay", i, AnimationCurve.Constant(0f, NoticeSeconds, 1f)));
                     var leave = layer.State(id + " (leave)", Card(id + " leave", i, AnimationCurve.EaseInOut(0f, 1f, NoticeFadeOut, 0f)));
-                    WirenookSounds.PlayOnEnter(appear, WirenookSounds.SourceName, "chime", 0.4f);
+                    WirenookSounds.PlayOnEnter(appear, WirenookSounds.SourceName, "chime");
 
                     idle.To(appear).Equal(parameter, chosen);
                     appear.To(leave).AfterTime(1f).NotEqual(parameter, chosen);

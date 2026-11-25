@@ -242,7 +242,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 0.5
+  m_Volume: 1
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -338,7 +338,7 @@ MonoBehaviour:
   m_Script: {fileID: 1610797297, guid: 67cc4cb7839cd3741b63733d5adf0442, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Gain: 0
+  Gain: 6
   Far: 30
   Near: 0
   VolumetricRadius: 0
@@ -502,6 +502,7 @@ GameObject:
   - component: {fileID: 5123147728435998367}
   - component: {fileID: 5062057338204174230}
   - component: {fileID: 5465839428951522802}
+  - component: {fileID: 4660141319553793044}
   m_Layer: 0
   m_Name: Wirenook Laser Pointer (Ping)
   m_TagString: Untagged
@@ -688,6 +689,20 @@ MonoBehaviour:
   tag: laser pointer
   tagPriority: 40
   joinAvatarMesh: 1
+--- !u!114 &4660141319553793044
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6350029687575131849}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d99705c682848743870b8661469ef44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hand: 1
+  parameter: WN/Laser
 --- !u!1 &7928192357160854036
 GameObject:
   m_ObjectHideFlags: 0
