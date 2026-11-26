@@ -143,12 +143,19 @@ namespace Wirenook.AdventureTools.Editor
         /// moves onto the hand, a grip that fits the tool into that hand, and
         /// the model below it.
         /// </summary>
-        private static GameObject HeldModel(GameObject root, string modelFile, HumanBodyBones hand)
+        /// <param name="parameter">The bool that is on while the tool is out; the hand closes on it for as long.</param>
+        /// <param name="curl">How far the fingers close round it, and <paramref name="indexCurl"/> the index finger; see <see cref="WirenookHandGrip"/>.</param>
+        private static GameObject HeldModel(GameObject root, string modelFile, HumanBodyBones hand, string parameter,
+            float curl, float indexCurl)
         {
             var mount = FeaturePrefab.Child(root, Mount);
             FeaturePrefab.AttachToBone(mount, hand);
             var grip = FeaturePrefab.Child(mount, Grip);
-            FeaturePrefab.Ensure<WirenookHandGrip>(grip).hand = hand;
+            var fit = FeaturePrefab.Ensure<WirenookHandGrip>(grip);
+            fit.hand = hand;
+            fit.held = new List<WirenookHeldWhen> { WirenookHeldWhen.On(parameter) };
+            fit.curl = curl;
+            fit.indexCurl = indexCurl;
             return FeaturePrefab.Model(grip, Models + "/" + modelFile);
         }
 
@@ -174,7 +181,16 @@ namespace Wirenook.AdventureTools.Editor
                 var mount = FeaturePrefab.Child(root, Mount);
                 FeaturePrefab.AttachToBone(mount, HumanBodyBones.LeftHand);
                 var grip = FeaturePrefab.Child(mount, Grip);
-                FeaturePrefab.Ensure<WirenookHandGrip>(grip).hand = HumanBodyBones.LeftHand;
+                var fit = FeaturePrefab.Ensure<WirenookHandGrip>(grip);
+                fit.hand = HumanBodyBones.LeftHand;
+                // In the hand while it is the light chosen, and, for one that
+                // can be left standing in the world, not put down.
+                fit.held = new List<WirenookHeldWhen> { WirenookHeldWhen.Is(LightParameter, light.Choice) };
+                if (real) fit.held.Add(WirenookHeldWhen.Off(light.Placed));
+                // A torch is a thick barrel; a lantern hangs from a thin bail the fingers hook under.
+                fit.curl = light.SwingBone != null ? 0.75f : 0.5f;
+                fit.indexCurl = fit.curl;
+                fit.thumbCurl = light.SwingBone != null ? 0.85f : 0.7f;
 
                 SyncedAnchor rig = null;
                 GameObject model;
@@ -331,7 +347,7 @@ namespace Wirenook.AdventureTools.Editor
             const string parameter = "WN/Megaphone";
             FeaturePrefab.Edit(MegaphonePrefab, root =>
             {
-                var model = HeldModel(root, "megaphone.fbx", HumanBodyBones.RightHand);
+                var model = HeldModel(root, "megaphone.fbx", HumanBodyBones.RightHand, parameter, 0.65f, 0.65f);
                 var body = FeaturePrefab.PathTo(root, FeaturePrefab.Bone(model, "Megaphone"));
                 var waves = FeaturePrefab.PathTo(root, FeaturePrefab.Bone(model, "Megaphone.Waves"));
                 WirenookSounds.Source(root);
@@ -383,7 +399,8 @@ namespace Wirenook.AdventureTools.Editor
             const string ray = "WN/LaserRay";
             FeaturePrefab.Edit(ping ? LaserPingPrefab : LaserPrefab, root =>
             {
-                var model = HeldModel(root, "laser-pointer.fbx", HumanBodyBones.RightHand);
+                // A slim barrel, with the index finger lying along it to aim.
+                var model = HeldModel(root, "laser-pointer.fbx", HumanBodyBones.RightHand, parameter, 0.8f, 0.3f);
                 var body = FeaturePrefab.PathTo(root, FeaturePrefab.Bone(model, "LaserPointer"));
                 var beam = FeaturePrefab.Bone(model, "LaserPointer.Beam");
                 var dot = FeaturePrefab.Bone(model, "LaserPointer.Dot");
