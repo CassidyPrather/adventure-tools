@@ -525,7 +525,7 @@ namespace Wirenook.AdventureTools.Editor
 
             // Heard from the spot itself, and from further off than the
             // other cues: it is there to be found.
-            WirenookSounds.Source(anchor).GetComponent<VRCSpatialAudioSource>().Far = LaserRange;
+            WirenookSounds.Source(anchor, shared: false).GetComponent<VRCSpatialAudioSource>().Far = LaserRange;
 
             fx.Bool(PingParameter).Bool("IsLocal").Int("GestureRight");
 
