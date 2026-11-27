@@ -135,6 +135,7 @@ namespace Wirenook.AdventureTools.Editor
             Bundle(BundleLanternPrefab, LaserPrefab, MegaphonePrefab, LanternRealPrefab, NoticePrefab);
             Bundle(BundleEventPrefab, LaserPingPrefab, MegaphonePrefab, FlashlightPrefab, LanternPrefab, NoticePrefab, BeaconPrefab);
             AssetDatabase.SaveAssets();
+            PresenceBuild.Rebuild();
             Debug.Log("[adventure-tools] Rebuilt prefabs and animators.");
         }
 
@@ -287,6 +288,13 @@ namespace Wirenook.AdventureTools.Editor
                 var parameters = new List<ParameterConfig> { FeaturePrefab.SyncedInt(LightParameter) };
                 if (real)
                 {
+                    // A light is not a renderer, so the invisible switch does
+                    // not reach it: put it out here, for everyone the wearer
+                    // is not drawn for. By its brightness, which no other
+                    // layer animates; whether it is enabled is the toggle's.
+                    Wirenook.SelectiveAnimation.Editor.AudienceLayers.Layer(Presence.NotDrawnHere, fx, light.Label + " Unseen",
+                        fx.Clip("lamp dark", clip => clip.Constant(lampPath, typeof(Light), "m_Intensity", 0f)),
+                        fx.Clip("lamp bright", clip => clip.Constant(lampPath, typeof(Light), "m_Intensity", light.Intensity)));
                     Placement(fx, rig, light);
                     parameters.Add(FeaturePrefab.SyncedBool(light.Placed));
                     parameters.AddRange(rig.Parameters());
