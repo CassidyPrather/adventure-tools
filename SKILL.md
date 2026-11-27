@@ -77,3 +77,6 @@ scripts/build-packages.sh      # VPM .zip + .unitypackage per package -> dist/
 - Unity editor stays on 2022.3.22f1, the version VRChat supports. Runtime Unity packages in `Packages/manifest.json` (Timeline, TextMeshPro, AI Navigation, uGUI) stay at the versions the VRChat client ships. Only editor-only tooling (IDE integrations, Test Framework) tracks the latest.
 - Version lives in `package.json`; a release publishes every package whose version matches the tag.
 - The linking exception in `LICENSE_ADDENDUM` is load-bearing legal text. Don't reword it casually.
+- **A setting of something set down is its value on the stage, not a synced parameter** (`plan.Thing(name, value: ...)`, `thing.Value`, `kit.Stage.MenuValue`): the bus carries all of them for eight bits. The kit's four sizes were 32 bits and are now part of those eight.
+- **A thing marked `rehearsed` is shown to `thing.Shown` and acts for `thing.Real` only.** Its contacts rest switched off and are switched on by a layer for `Real`; shown to the people backstage as a spectre, it must not be touchable by them.
+- **A kit that replaces the plain kit keeps the prefix `GM`** (`GameMasterOptions.Replaces`): the replaced feature's parameters stay declared, and only names that coincide cost nothing twice.

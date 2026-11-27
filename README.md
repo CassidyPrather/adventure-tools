@@ -361,15 +361,17 @@ every platform, where the avatar has the dial for one.
 | Tool | Menu | What it does | Synced bits |
 | --- | --- | --- | --- |
 | Dice | Dice ▸ | A coin, 1d6, 2d6, 1d20, 2d20, for everyone or in secret. | 21 |
-| Pause | Pause ▸ | A ring dropped where you stand; inside it the room is dimmed and people are told. | 8, and 1 of the stage's |
-| Zones | Zones ▸ | Three spheres to set down, sized by a dial, for everyone or for backstage only. | 27, and 3 of the stage's |
+| Pause | Pause ▸ | A ring dropped where you stand; inside it the room is dimmed and people are told. | 1 of the stage's |
+| Zones | Zones ▸ | Three spheres to set down, sized by a dial, for everyone or for backstage only. | 3, and 3 of the stage's |
 | Pointer | Pointer ▸ | A light on the index fingertip, and a laser from it. | 3 |
 | Portal | Portal ▸ | A door, and where it leads: a second spot, or you. | 2 of the stage's |
 | Skeleton key | Key ▸ | Sends any one of VRChat's nineteen trait tags, and shows which it feels. PC only. | 9 |
 | Roleplay notices | Say ▸ | Eight cards for a table ("Scene starts", "Roll for initiative", ...). PC only. | 8 |
-| The stage | Clear all | Sets all of the above down in the world, in the same place for everyone. | 58 |
+| The stage | Clear all | Sets all of the above down in the world, in the same place for everyone, and carries a value for each thing (the sizes). | 66 |
 
-140 synced bits in all, of the 256 an avatar may have. What it costs in
+116 synced bits in all, of the 256 an avatar may have. It was 140: the
+four sizes were a synced float each, and now ride the bus for eight bits
+between them (below). What it costs in
 rank, on PC: one raycast, 20 contacts (all the key's), 15 constraints
 (none deeper than three), one station, three audio sources, two skinned
 meshes with five material slots between them, a trail and the notices'
@@ -399,6 +401,14 @@ to stand. "Shown" switches it off and on again without moving it, and
 
 Things stand upright in the world's own axes. The bus syncs no heading,
 so everything here is round.
+
+Every thing also has **a value**, a number from 0 to 1 that all clients
+read under one name: the size of a zone or of the pause. The wearer sets
+it with a dial; everyone else gets it from the bus, in the thing's turn,
+and ahead of its turn when it has just changed. So a turn of a size dial
+reaches other people a second or two later, in steps and not smoothly,
+and all the dials together sync eight bits where they used to sync
+eight each. world-sync's README has the mechanism and what it costs.
 
 ### Dice
 
@@ -520,10 +530,43 @@ before any tool's second:
 
 | Step | What it does there |
 | --- | --- |
-| `Things(plan)` | Names what it sets down: `plan.Thing("Trap")`, or `plan.Thing("Alarm", atFeet: true)` for something dropped where the wearer stands. |
+| `Things(plan)` | Names what it sets down: `plan.Thing("Trap")`, or `plan.Thing("Alarm", atFeet: true)` for something dropped where the wearer stands. `value:` is what the thing's value rests at, and `rehearsed: true` makes it part of a course (below). |
 | `Build(kit)` | Makes its objects. `kit.Stage.Hold("Trap", kit.Stage["Trap"])` gives a bone that stands where the thing does and rides the wearer's aim while they place it. `kit.Solid` is the mesh every platform draws (`ShapeMesh`: boxes, rings, bends, balls, slices of a ball, in swatches of the wirenook palette, of which `glow-cyan` and `cyan` follow the signature colour). `kit.Effects` is the PC-only mesh; `kit.Effect(material)` gives a slot in it. |
 | `Layers(kit)` | Adds its layers to `kit.Fx`. `kit.Stage.Show(fx, name, paths, audience)` pops bones in for an audience and keeps the meshes' bounds whole meanwhile. A thing has `Standing` (on show, for a client that knows where), `Mine` (the wearer, while placing it) and `Shown` (either) as audiences, to narrow with `And` (see [selective-animation](https://github.com/CassidyPrather/selective-animation)); `GameMaster.Backstage` is the people backstage and the wearer. |
 | `Menu(kit)` | Adds its parameters to `kit.Parameters` and its folder with `kit.Folder(label, icon)`; `kit.Stage.MenuAim`, `MenuNow`, `MenuShown` and `MenuSet` are the stage's controls for a thing. |
+
+**A value for each thing.** `thing.Value` is a float every client has
+(the stage's bus carries it): read it with `MotionTime` for a size or a
+heading, and give the wearer its dial with `kit.Stage.MenuValue`. It
+costs no synced bits beyond the eight the bus spends on all of them, and
+arrives a second or two after the wearer changes it.
+
+**A course, rehearsed.** A thing asked for with `rehearsed: true` is
+laid out behind the scenes: set down, it stands for the wearer and the
+people backstage only, until the wearer raises the stage's one synced
+`Live` bit (`kit.Stage.MenuLive`) and the whole course is there for
+everyone at once. A thing then has three more audiences: `Real` (it
+stands, and the course is live: the only audience its contacts should be
+on for), `Rehearsal` (the people backstage, before it is live, who are
+to see it as a spectre) and `Shown`, which is those two and `Mine`.
+"Clear all" takes the course back behind the scenes.
+
+**Standing in for the plain kit.** `GameMasterOptions.FeatureId` and
+`Replaces` are for a kit that goes on an avatar made from one that
+already carries the plain kit: it names `game-master` as what it
+replaces (`WirenookReplaces`), and must keep the prefix `GM`, because
+the parameters of a feature that is left out of a build stay declared.
+
+`Wirenook/Stage Volume` takes a colour of its own (`_Colour`, with
+`_Own` at 1) for a volume that should not be in the signature colour.
+
+The worked example is in
+[cass-avatar](https://github.com/CassidyPrather/cass-avatar),
+`Packages/net.wirenook.meta-avatar/Editor/Crypt`: a kit for a module
+called The Sunken Crypt, with zones of an element, a danger zone, a
+barricade, a locked chest, a pendulum and a rift, in meshes and
+materials of its own, on skill checks from
+[contacts](https://github.com/CassidyPrather/contacts).
 
 `ZoneTool.Marker(kit, bone)` adds one sphere marker, a metre in radius,
 to both meshes, for a tool that marks a place of its own, and
@@ -564,6 +607,9 @@ times a second (world-sync's check does the standing-in):
   and no other, and each pip follows its trait.
 - **What it carries**: the counts above, and that nothing every platform
   draws is skinned to a bone mobile builds leave out.
+- **The sizes on the bus**, by world-sync's check: every slot's value
+  reaches a viewer with its place, and one the wearer changes is with
+  the viewer a second later.
 
 `Assets/Validation/Editor/GameMasterPreview.cs` in cass-avatar renders
 every tool, the shaders included, and each new shader compiles

@@ -37,18 +37,36 @@ namespace Wirenook.AdventureTools.Editor
         void Menu(GameMaster kit);
     }
 
+    /// <summary>One thing a tool asks its kit's stage for.</summary>
+    public sealed class PlannedThing
+    {
+        public string name;
+
+        /// <summary>Set down where the wearer stands, at one press, with no aiming.</summary>
+        public bool atFeet;
+
+        /// <summary>What the thing's value (<see cref="StageThing.Value"/>) rests at, 0 to 1.</summary>
+        public float value;
+
+        /// <summary>Part of a course that is laid out before it is shown: see <see cref="Stage.Live"/>.</summary>
+        public bool rehearsed;
+    }
+
     /// <summary>What a kit's stage will set down, gathered before the stage is built.</summary>
     public sealed class StagePlan
     {
-        private readonly List<(string name, bool atFeet)> _things = new List<(string, bool)>();
+        private readonly List<PlannedThing> _things = new List<PlannedThing>();
 
-        public IReadOnlyList<(string name, bool atFeet)> Things => _things;
+        public IReadOnlyList<PlannedThing> Things => _things;
 
-        /// <summary>Asks for a thing of this name. One "at feet" is set down where the wearer stands, with no aiming.</summary>
-        public void Thing(string name, bool atFeet = false)
+        /// <summary>Asks for a thing of this name.</summary>
+        /// <param name="atFeet">Set down where the wearer stands, with no aiming.</param>
+        /// <param name="value">What its value rests at: a size on a dial, say. Every thing has one, and all of them together sync eight bits.</param>
+        /// <param name="rehearsed">Seen by the people backstage alone, as a spectre, until the course goes live.</param>
+        public void Thing(string name, bool atFeet = false, float value = 0f, bool rehearsed = false)
         {
             if (_things.Any(thing => thing.name == name)) throw new ArgumentException("Two things are called \"" + name + "\".");
-            _things.Add((name, atFeet));
+            _things.Add(new PlannedThing { name = name, atFeet = atFeet, value = value, rehearsed = rehearsed });
         }
     }
 
@@ -60,6 +78,21 @@ namespace Wirenook.AdventureTools.Editor
 
         /// <summary>What the kit's folder in the menu is called.</summary>
         public string MenuLabel = "Game Master";
+
+        /// <summary>The feature's id (WirenookFeature.id): a kit for one module has its own.</summary>
+        public string FeatureId = GameMasterBuild.FeatureId;
+
+        /// <summary>What the feature is called in lists of what an avatar carries.</summary>
+        public string FeatureLabel = "Game master's kit";
+
+        /// <summary>
+        /// Ids of features this kit stands in for (WirenookReplaces): a
+        /// kit for one module, on an avatar made from one that carries
+        /// the plain kit, names the plain kit here. Both must then keep
+        /// the same <see cref="Prefix"/>, because the parameters of the
+        /// one left out stay declared.
+        /// </summary>
+        public string[] Replaces = new string[0];
 
         /// <summary>The wearer's eye height in metres: a roll only they see is shown a little below it.</summary>
         public float EyeHeight = 1.55f;

@@ -165,6 +165,7 @@ namespace Wirenook.AdventureTools.Editor
         /// <param name="also">Further curves that follow the radius: called with the clip and the radius over the dial's travel.</param>
         public static void Sized(ControllerBuilder fx, string layerName, string path, string dial, Action<ClipBuilder, AnimationCurve> also = null)
         {
+            // A thing's value on the stage is already declared by its bus, with what it rests at.
             fx.Float(dial, ZoneModel.RestingAmount);
             const int keys = 17;
             var radius = new AnimationCurve(Enumerable.Range(0, keys)
@@ -327,7 +328,10 @@ namespace Wirenook.AdventureTools.Editor
                 Order(root);
 
                 FeaturePrefab.Parameters(root, kit.Parameters.ToArray());
-                FeaturePrefab.Describe(root, FeatureId, "Game master's kit", FeatureId, "game master", 8);
+                FeaturePrefab.Describe(root, options.FeatureId, options.FeatureLabel, FeatureId, "game master", 8);
+                var replaces = root.GetComponent<WirenookReplaces>();
+                if (options.Replaces.Length > 0) FeaturePrefab.Ensure<WirenookReplaces>(root).features = options.Replaces;
+                else if (replaces != null) UnityEngine.Object.DestroyImmediate(replaces);
             });
         }
 

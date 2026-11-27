@@ -45,11 +45,36 @@ namespace Wirenook.AdventureTools.Editor
         /// <summary>Synced bool: the thing is on show.</summary>
         public string On { get; internal set; }
 
+        /// <summary>
+        /// The thing's value, 0 to 1: a float that every client has under
+        /// this name, the wearer's from their menu and everyone else's
+        /// from the bus (<see cref="AnchorBus.Value"/>). A size on a dial
+        /// is the usual use. It costs no synced bits of its own.
+        /// </summary>
+        public string Value { get; internal set; }
+
+        /// <summary>Part of a course that is laid out before it is shown.</summary>
+        public bool Rehearsed { get; internal set; }
+
         /// <summary>On each client: it knows where the thing stands.</summary>
         public string Placed { get; internal set; }
 
         /// <summary>Whoever the thing stands for: it is on show, and their client knows where.</summary>
         public Audience Standing { get; internal set; }
+
+        /// <summary>
+        /// Whoever the thing is real for: it stands, and (for one that is
+        /// rehearsed) the course is live. What a thing does to people, its
+        /// contacts above all, belongs to this audience and no wider one.
+        /// </summary>
+        public Audience Real { get; internal set; }
+
+        /// <summary>
+        /// The people backstage, the wearer among them, while a rehearsed
+        /// thing stands and the course is not live yet: they are to see it
+        /// as a spectre. Nobody, for a thing that is not rehearsed.
+        /// </summary>
+        public Audience Rehearsal { get; internal set; }
 
         /// <summary>The wearer alone, while they are putting the thing down: it rides their aim until it stands.</summary>
         public Audience Mine { get; internal set; }
@@ -58,7 +83,7 @@ namespace Wirenook.AdventureTools.Editor
         public Audience Carried { get; internal set; }
 
         /// <summary>Everyone who is to see the thing, before a tool narrows it further.</summary>
-        public Audience Shown => Standing.Or(Mine);
+        public Audience Shown => Real.Or(Rehearsal).Or(Mine);
     }
 
     /// <summary>
@@ -87,6 +112,16 @@ namespace Wirenook.AdventureTools.Editor
     /// can also switch: off takes the thing away, and on brings it back
     /// where it last stood.
     ///
+    /// Each thing also has a value, a float every client reads under one
+    /// name (<see cref="StageThing.Value"/>), which rides the bus with the
+    /// thing's place: the sizes of all the zones together sync eight bits.
+    ///
+    /// A thing can be marked as rehearsed. Such things make up a course:
+    /// set down, they stand for the people backstage alone (who are to
+    /// draw them as spectres, <see cref="StageThing.Rehearsal"/>) until the
+    /// wearer raises one synced bit, <see cref="Live"/>, and the whole
+    /// course is there for everyone at once.
+    ///
     /// Nothing here draws anything but the mark the wearer aims with. A
     /// tool holds its own bones on a thing (<see cref="Hold"/>) and shows
     /// them to <see cref="StageThing.Shown"/>.
@@ -112,6 +147,15 @@ namespace Wirenook.AdventureTools.Editor
 
         /// <summary>Synced bool: the wearer is aiming, and their pointing hand is a button.</summary>
         public string Aiming => Options.Prefix + "/Aiming";
+
+        /// <summary>
+        /// Synced bool, on a stage with rehearsed things: the course is
+        /// live, and what was laid out is there for everyone.
+        /// </summary>
+        public string Live => Options.Prefix + "/Live";
+
+        /// <summary>Whether any thing on the stage is rehearsed, and so whether <see cref="Live"/> exists.</summary>
+        public bool Rehearses => _things.Any(thing => thing.Rehearsed);
 
         private string Place => Options.Prefix + "/Place";
         private string Arming => Options.Prefix + "/Arming";
@@ -149,8 +193,8 @@ namespace Wirenook.AdventureTools.Editor
         /// <summary>Call once before editing a prefab that carries a stage.</summary>
         public static void Prepare() => SyncedAnchor.Prepare();
 
-        /// <param name="things">What can be set down, in the order of their slots; true for one that is set down at the wearer's feet.</param>
-        public static Stage Configure(GameObject root, Pointer pointer, StageOptions options, params (string name, bool atFeet)[] things)
+        /// <param name="things">What can be set down, in the order of their slots.</param>
+        public static Stage Configure(GameObject root, Pointer pointer, StageOptions options, params PlannedThing[] things)
         {
             if (things.Length == 0) throw new ArgumentException("A stage with nothing to set down.", nameof(things));
             var stage = new Stage(root, pointer, options ?? new StageOptions());
@@ -161,7 +205,7 @@ namespace Wirenook.AdventureTools.Editor
         public StageThing this[string name] =>
             _things.FirstOrDefault(thing => thing.Name == name) ?? throw new KeyNotFoundException("The stage has nothing called \"" + name + "\".");
 
-        private void Build((string name, bool atFeet)[] things)
+        private void Build(PlannedThing[] things)
         {
             var holder = FeaturePrefab.Child(_root, "Stage");
             var inFront = FeaturePrefab.Child(holder, "In Front");
@@ -176,7 +220,8 @@ namespace Wirenook.AdventureTools.Editor
             follow.AddSource(new VRCConstraintSource { SourceTransform = Pointer.Dot, Weight = 0f });
             follow.AddSource(new VRCConstraintSource { SourceTransform = inFront.transform, Weight = 1f });
 
-            Bus = AnchorBus.Configure(_root, Options.Prefix + "/Bus", things.Length, new[] { _carry, feet.transform }, Options.Range);
+            Bus = AnchorBus.Configure(_root, Options.Prefix + "/Bus", things.Length, new[] { _carry, feet.transform }, Options.Range,
+                things.Select(thing => thing.value).ToArray());
             var world = Bus.Pose(1).parent.parent;
 
             // What the stage draws is drawn wherever its bones are, which
@@ -197,6 +242,8 @@ namespace Wirenook.AdventureTools.Editor
                 var on = Options.Prefix + "/" + things[index].name.Replace(" ", "");
                 var placed = Bus.Placed(slot);
                 var carried = Audience.Wearer.And(Audience.WhenEqual(Aim, slot));
+                var standing = Audience.WhenTrue(on).And(Audience.WhenTrue(placed));
+                var rehearsed = things[index].rehearsed;
                 _things.Add(new StageThing
                 {
                     Name = things[index].name,
@@ -204,8 +251,12 @@ namespace Wirenook.AdventureTools.Editor
                     AtFeet = things[index].atFeet,
                     Pose = Bus.Pose(slot),
                     On = on,
+                    Value = Bus.Value(slot),
+                    Rehearsed = rehearsed,
                     Placed = placed,
-                    Standing = Audience.WhenTrue(on).And(Audience.WhenTrue(placed)),
+                    Standing = standing,
+                    Real = rehearsed ? standing.And(Audience.WhenTrue(Live)) : standing,
+                    Rehearsal = rehearsed ? standing.And(Audience.WhenFalse(Live)).And(GameMaster.Backstage) : Audience.Nobody,
                     Carried = carried,
                     Mine = carried.Or(Audience.Wearer.And(Audience.WhenEqual(Arming, slot))),
                 });
@@ -316,6 +367,7 @@ namespace Wirenook.AdventureTools.Editor
             fx.Int(Aim).Int(Now).Bool(Set).Bool(Clear).Bool(Aiming).Int(Place).Int(Arming).Bool(Stored).Bool(Air)
                 .Bool("IsLocal").Int(Gesture).Bool(Pointer.Hit).Float(Bus.OnAir).Int(Bus.Pending).Int(Bus.Fresh);
             foreach (var thing in _things) fx.Bool(thing.On).Bool(thing.Placed);
+            if (Rehearses) fx.Bool(Live).Declare(GameMaster.Backstage);
 
             var extentPath = FeaturePrefab.PathTo(_root, _extent);
             fx.Layer("Stage Extent").State("None", fx.Clip("stage extent none", clip =>
@@ -360,7 +412,8 @@ namespace Wirenook.AdventureTools.Editor
             var clearing = clear.State("Clearing");
             clearing.Behaviour<VRCAvatarParameterDriver>(driver => Drive(driver,
                 _things.Select(thing => Change(thing.On, 0f))
-                    .Concat(new[] { Change(Arming, 0f), Change(Stored, 0f), Change(Aim, 0f) }).ToArray()));
+                    .Concat(new[] { Change(Arming, 0f), Change(Stored, 0f), Change(Aim, 0f) })
+                    .Concat(Rehearses ? new[] { Change(Live, 0f) } : new VRC_AvatarParameterDriver.Parameter[0]).ToArray()));
             keeping.To(clearing).IfTrue("IsLocal").IfTrue(Clear);
             clearing.To(keeping).IfFalse(Clear);
 
@@ -469,6 +522,7 @@ namespace Wirenook.AdventureTools.Editor
             foreach (var parameter in Bus.Parameters()) yield return parameter;
             foreach (var thing in _things) yield return FeaturePrefab.SyncedBool(thing.On);
             yield return FeaturePrefab.SyncedBool(Aiming);
+            if (Rehearses) yield return FeaturePrefab.SyncedBool(Live);
             yield return Mine(Aim, ParameterSyncType.Int);
             yield return Mine(Now, ParameterSyncType.Int);
             yield return Mine(Set, ParameterSyncType.Bool);
@@ -477,7 +531,7 @@ namespace Wirenook.AdventureTools.Editor
         }
 
         /// <summary>Synced bits the stage costs with this many things on it.</summary>
-        public int SyncedBits => AnchorBus.SyncedBits + _things.Count + 1;
+        public int SyncedBits => Bus.Bits + _things.Count + 1 + (Rehearses ? 1 : 0);
 
         /// <summary>A parameter the menu sets on the wearer's client and nobody else hears of.</summary>
         private static ParameterConfig Mine(string name, ParameterSyncType type)
@@ -514,6 +568,20 @@ namespace Wirenook.AdventureTools.Editor
         {
             FeaturePrefab.MenuButton(holder, label, icon, Set);
             Local(holder);
+        }
+
+        /// <summary>A dial in the menu for a thing's value. It is the wearer's own; the bus tells everyone else.</summary>
+        public void MenuValue(GameObject holder, StageThing thing, string label, string icon)
+        {
+            FeaturePrefab.MenuRadial(holder, label, icon, thing.Value);
+            holder.GetComponent<ModularAvatarMenuItem>().isSynced = false;
+        }
+
+        /// <summary>The menu switch that makes a rehearsed course live, and takes it back behind the scenes.</summary>
+        public void MenuLive(GameObject holder, string label = "Live", string icon = "seen")
+        {
+            if (!Rehearses) throw new InvalidOperationException("The stage has nothing that is rehearsed, so nothing to make live.");
+            FeaturePrefab.MenuToggle(holder, label, icon, Live);
         }
 
         /// <summary>The menu button that takes everything away.</summary>

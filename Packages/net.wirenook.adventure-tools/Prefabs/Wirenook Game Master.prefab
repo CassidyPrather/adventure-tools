@@ -381,11 +381,11 @@ MonoBehaviour:
     style: 0
     subMenu: {fileID: 0}
     subParameters:
-    - name: GM/Zone2/Size
+    - name: GM/Stage/Bus/3/Value
     labels: []
   MenuSource: 0
   menuSource_otherObjectChildren: {fileID: 0}
-  isSynced: 1
+  isSynced: 0
   isSaved: 0
   isDefault: 0
   automaticValue: 0
@@ -1266,11 +1266,11 @@ MonoBehaviour:
     style: 0
     subMenu: {fileID: 0}
     subParameters:
-    - name: GM/Zone3/Size
+    - name: GM/Stage/Bus/4/Value
     labels: []
   MenuSource: 0
   menuSource_otherObjectChildren: {fileID: 0}
-  isSynced: 1
+  isSynced: 0
   isSaved: 0
   isDefault: 0
   automaticValue: 0
@@ -1795,6 +1795,206 @@ MonoBehaviour:
     hasExplicitDefaultValue: 1
     m_overrideAnimatorDefaults: 0
   - nameOrPrefix: GM/Stage/Bus/Fresh
+    remapTo: 
+    internalParameter: 0
+    isPrefix: 0
+    syncType: 0
+    localOnly: 1
+    defaultValue: 0
+    saved: 0
+    hasExplicitDefaultValue: 1
+    m_overrideAnimatorDefaults: 0
+  - nameOrPrefix: GM/Stage/Bus/TxValue
+    remapTo: 
+    internalParameter: 0
+    isPrefix: 0
+    syncType: 2
+    localOnly: 0
+    defaultValue: 0
+    saved: 0
+    hasExplicitDefaultValue: 1
+    m_overrideAnimatorDefaults: 0
+  - nameOrPrefix: GM/Stage/Bus/Stale
+    remapTo: 
+    internalParameter: 0
+    isPrefix: 0
+    syncType: 0
+    localOnly: 1
+    defaultValue: 0
+    saved: 0
+    hasExplicitDefaultValue: 1
+    m_overrideAnimatorDefaults: 0
+  - nameOrPrefix: GM/Stage/Bus/1/Value
+    remapTo: 
+    internalParameter: 0
+    isPrefix: 0
+    syncType: 2
+    localOnly: 1
+    defaultValue: 0.39624062
+    saved: 1
+    hasExplicitDefaultValue: 1
+    m_overrideAnimatorDefaults: 0
+  - nameOrPrefix: GM/Stage/Bus/1/ValueAired
+    remapTo: 
+    internalParameter: 0
+    isPrefix: 0
+    syncType: 0
+    localOnly: 1
+    defaultValue: 0.39624062
+    saved: 0
+    hasExplicitDefaultValue: 1
+    m_overrideAnimatorDefaults: 0
+  - nameOrPrefix: GM/Stage/Bus/1/ValueDrift
+    remapTo: 
+    internalParameter: 0
+    isPrefix: 0
+    syncType: 0
+    localOnly: 1
+    defaultValue: 0
+    saved: 0
+    hasExplicitDefaultValue: 1
+    m_overrideAnimatorDefaults: 0
+  - nameOrPrefix: GM/Stage/Bus/2/Value
+    remapTo: 
+    internalParameter: 0
+    isPrefix: 0
+    syncType: 2
+    localOnly: 1
+    defaultValue: 0.39624062
+    saved: 1
+    hasExplicitDefaultValue: 1
+    m_overrideAnimatorDefaults: 0
+  - nameOrPrefix: GM/Stage/Bus/2/ValueAired
+    remapTo: 
+    internalParameter: 0
+    isPrefix: 0
+    syncType: 0
+    localOnly: 1
+    defaultValue: 0.39624062
+    saved: 0
+    hasExplicitDefaultValue: 1
+    m_overrideAnimatorDefaults: 0
+  - nameOrPrefix: GM/Stage/Bus/2/ValueDrift
+    remapTo: 
+    internalParameter: 0
+    isPrefix: 0
+    syncType: 0
+    localOnly: 1
+    defaultValue: 0
+    saved: 0
+    hasExplicitDefaultValue: 1
+    m_overrideAnimatorDefaults: 0
+  - nameOrPrefix: GM/Stage/Bus/3/Value
+    remapTo: 
+    internalParameter: 0
+    isPrefix: 0
+    syncType: 2
+    localOnly: 1
+    defaultValue: 0.39624062
+    saved: 1
+    hasExplicitDefaultValue: 1
+    m_overrideAnimatorDefaults: 0
+  - nameOrPrefix: GM/Stage/Bus/3/ValueAired
+    remapTo: 
+    internalParameter: 0
+    isPrefix: 0
+    syncType: 0
+    localOnly: 1
+    defaultValue: 0.39624062
+    saved: 0
+    hasExplicitDefaultValue: 1
+    m_overrideAnimatorDefaults: 0
+  - nameOrPrefix: GM/Stage/Bus/3/ValueDrift
+    remapTo: 
+    internalParameter: 0
+    isPrefix: 0
+    syncType: 0
+    localOnly: 1
+    defaultValue: 0
+    saved: 0
+    hasExplicitDefaultValue: 1
+    m_overrideAnimatorDefaults: 0
+  - nameOrPrefix: GM/Stage/Bus/4/Value
+    remapTo: 
+    internalParameter: 0
+    isPrefix: 0
+    syncType: 2
+    localOnly: 1
+    defaultValue: 0.39624062
+    saved: 1
+    hasExplicitDefaultValue: 1
+    m_overrideAnimatorDefaults: 0
+  - nameOrPrefix: GM/Stage/Bus/4/ValueAired
+    remapTo: 
+    internalParameter: 0
+    isPrefix: 0
+    syncType: 0
+    localOnly: 1
+    defaultValue: 0.39624062
+    saved: 0
+    hasExplicitDefaultValue: 1
+    m_overrideAnimatorDefaults: 0
+  - nameOrPrefix: GM/Stage/Bus/4/ValueDrift
+    remapTo: 
+    internalParameter: 0
+    isPrefix: 0
+    syncType: 0
+    localOnly: 1
+    defaultValue: 0
+    saved: 0
+    hasExplicitDefaultValue: 1
+    m_overrideAnimatorDefaults: 0
+  - nameOrPrefix: GM/Stage/Bus/5/Value
+    remapTo: 
+    internalParameter: 0
+    isPrefix: 0
+    syncType: 2
+    localOnly: 1
+    defaultValue: 0
+    saved: 1
+    hasExplicitDefaultValue: 1
+    m_overrideAnimatorDefaults: 0
+  - nameOrPrefix: GM/Stage/Bus/5/ValueAired
+    remapTo: 
+    internalParameter: 0
+    isPrefix: 0
+    syncType: 0
+    localOnly: 1
+    defaultValue: 0
+    saved: 0
+    hasExplicitDefaultValue: 1
+    m_overrideAnimatorDefaults: 0
+  - nameOrPrefix: GM/Stage/Bus/5/ValueDrift
+    remapTo: 
+    internalParameter: 0
+    isPrefix: 0
+    syncType: 0
+    localOnly: 1
+    defaultValue: 0
+    saved: 0
+    hasExplicitDefaultValue: 1
+    m_overrideAnimatorDefaults: 0
+  - nameOrPrefix: GM/Stage/Bus/6/Value
+    remapTo: 
+    internalParameter: 0
+    isPrefix: 0
+    syncType: 2
+    localOnly: 1
+    defaultValue: 0
+    saved: 1
+    hasExplicitDefaultValue: 1
+    m_overrideAnimatorDefaults: 0
+  - nameOrPrefix: GM/Stage/Bus/6/ValueAired
+    remapTo: 
+    internalParameter: 0
+    isPrefix: 0
+    syncType: 0
+    localOnly: 1
+    defaultValue: 0
+    saved: 0
+    hasExplicitDefaultValue: 1
+    m_overrideAnimatorDefaults: 0
+  - nameOrPrefix: GM/Stage/Bus/6/ValueDrift
     remapTo: 
     internalParameter: 0
     isPrefix: 0
@@ -2574,16 +2774,6 @@ MonoBehaviour:
     saved: 0
     hasExplicitDefaultValue: 1
     m_overrideAnimatorDefaults: 0
-  - nameOrPrefix: GM/Pause/Size
-    remapTo: 
-    internalParameter: 0
-    isPrefix: 0
-    syncType: 2
-    localOnly: 0
-    defaultValue: 0.39624062
-    saved: 0
-    hasExplicitDefaultValue: 1
-    m_overrideAnimatorDefaults: 0
   - nameOrPrefix: GM/Zone1/Backstage
     remapTo: 
     internalParameter: 0
@@ -2591,16 +2781,6 @@ MonoBehaviour:
     syncType: 3
     localOnly: 0
     defaultValue: 0
-    saved: 0
-    hasExplicitDefaultValue: 1
-    m_overrideAnimatorDefaults: 0
-  - nameOrPrefix: GM/Zone1/Size
-    remapTo: 
-    internalParameter: 0
-    isPrefix: 0
-    syncType: 2
-    localOnly: 0
-    defaultValue: 0.39624062
     saved: 0
     hasExplicitDefaultValue: 1
     m_overrideAnimatorDefaults: 0
@@ -2614,16 +2794,6 @@ MonoBehaviour:
     saved: 0
     hasExplicitDefaultValue: 1
     m_overrideAnimatorDefaults: 0
-  - nameOrPrefix: GM/Zone2/Size
-    remapTo: 
-    internalParameter: 0
-    isPrefix: 0
-    syncType: 2
-    localOnly: 0
-    defaultValue: 0.39624062
-    saved: 0
-    hasExplicitDefaultValue: 1
-    m_overrideAnimatorDefaults: 0
   - nameOrPrefix: GM/Zone3/Backstage
     remapTo: 
     internalParameter: 0
@@ -2631,16 +2801,6 @@ MonoBehaviour:
     syncType: 3
     localOnly: 0
     defaultValue: 0
-    saved: 0
-    hasExplicitDefaultValue: 1
-    m_overrideAnimatorDefaults: 0
-  - nameOrPrefix: GM/Zone3/Size
-    remapTo: 
-    internalParameter: 0
-    isPrefix: 0
-    syncType: 2
-    localOnly: 0
-    defaultValue: 0.39624062
     saved: 0
     hasExplicitDefaultValue: 1
     m_overrideAnimatorDefaults: 0
@@ -3594,11 +3754,11 @@ MonoBehaviour:
     style: 0
     subMenu: {fileID: 0}
     subParameters:
-    - name: GM/Pause/Size
+    - name: GM/Stage/Bus/1/Value
     labels: []
   MenuSource: 0
   menuSource_otherObjectChildren: {fileID: 0}
-  isSynced: 1
+  isSynced: 0
   isSaved: 0
   isDefault: 0
   automaticValue: 0
@@ -7010,11 +7170,11 @@ MonoBehaviour:
     style: 0
     subMenu: {fileID: 0}
     subParameters:
-    - name: GM/Zone1/Size
+    - name: GM/Stage/Bus/2/Value
     labels: []
   MenuSource: 0
   menuSource_otherObjectChildren: {fileID: 0}
-  isSynced: 1
+  isSynced: 0
   isSaved: 0
   isDefault: 0
   automaticValue: 0

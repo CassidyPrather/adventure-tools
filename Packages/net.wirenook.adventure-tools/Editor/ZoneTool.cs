@@ -26,8 +26,9 @@ namespace Wirenook.AdventureTools.Editor
     /// that overlap each other leave the overlap untinted; the shader's
     /// header says why.
     ///
-    /// Synced, for each zone: on show (the stage's bit), backstage only (a
-    /// bit) and the size (eight).
+    /// Synced, for each zone: on show (the stage's bit) and backstage only
+    /// (a bit). The size is the zone's value on the stage, which rides the
+    /// bus: a turn of the dial reaches everyone else a second or two later.
     /// </summary>
     public sealed class ZoneTool : IStageTool
     {
@@ -42,14 +43,13 @@ namespace Wirenook.AdventureTools.Editor
 
         public static string Name(int zone) => "Zone " + zone;
         public static string BackstageOnly(string prefix, int zone) => prefix + "/Zone" + zone + "/Backstage";
-        public static string Size(string prefix, int zone) => prefix + "/Zone" + zone + "/Size";
 
         private Transform[] _bones;
         private Transform[] _sizes;
 
         public void Things(StagePlan plan)
         {
-            for (var zone = 1; zone <= Count; zone++) plan.Thing(Name(zone));
+            for (var zone = 1; zone <= Count; zone++) plan.Thing(Name(zone), value: ZoneModel.RestingAmount);
         }
 
         public void Build(GameMaster kit)
@@ -106,7 +106,7 @@ namespace Wirenook.AdventureTools.Editor
                 var thing = kit.Stage[Name(zone)];
                 var backstage = BackstageOnly(kit.Prefix, zone);
                 var sizePath = kit.Path(_sizes[zone - 1]);
-                GameMasterBuild.Sized(fx, Name(zone) + " Size", sizePath, Size(kit.Prefix, zone));
+                GameMasterBuild.Sized(fx, Name(zone) + " Size", sizePath, thing.Value);
 
                 var audience = thing.Mine.Or(thing.Standing.And(Audience.WhenFalse(backstage).Or(GameMaster.Backstage)));
                 kit.Stage.Show(fx, Name(zone), new[] { kit.Path(_bones[zone - 1]) }, audience, (clip, phase) =>
@@ -124,7 +124,6 @@ namespace Wirenook.AdventureTools.Editor
             {
                 var thing = kit.Stage[Name(zone)];
                 kit.Parameters.Add(FeaturePrefab.SyncedBool(BackstageOnly(kit.Prefix, zone)));
-                kit.Parameters.Add(FeaturePrefab.SyncedFloat(Size(kit.Prefix, zone), ZoneModel.RestingAmount));
 
                 var own = FeaturePrefab.Child(folder, "Menu " + Name(zone));
                 FeaturePrefab.MenuFolder(own, Name(zone), "zone");
@@ -132,7 +131,7 @@ namespace Wirenook.AdventureTools.Editor
                 kit.Stage.MenuSet(FeaturePrefab.Child(own, "Menu Set"));
                 kit.Stage.MenuShown(FeaturePrefab.Child(own, "Menu Shown"), thing, "Shown");
                 FeaturePrefab.MenuToggle(FeaturePrefab.Child(own, "Menu Backstage"), "Backstage only", "presence", BackstageOnly(kit.Prefix, zone));
-                FeaturePrefab.MenuRadial(FeaturePrefab.Child(own, "Menu Size"), "Size", "zone", Size(kit.Prefix, zone));
+                kit.Stage.MenuValue(FeaturePrefab.Child(own, "Menu Size"), thing, "Size", "zone");
             }
         }
     }
@@ -148,7 +147,8 @@ namespace Wirenook.AdventureTools.Editor
     /// says so (Shaders/WirenookStageNotice). A sound plays from the spot
     /// when it begins and when it ends.
     ///
-    /// Synced: on show (the stage's bit) and the size (eight bits).
+    /// Synced: on show (the stage's bit). The size is the pause's value on
+    /// the stage, which rides the bus.
     /// </summary>
     public sealed class PauseTool : IStageTool
     {
@@ -163,15 +163,13 @@ namespace Wirenook.AdventureTools.Editor
         /// <summary>How far the sounds carry, in metres.</summary>
         public const float Heard = 25f;
 
-        public static string Size(string prefix) => prefix + "/Pause/Size";
-
         private Transform _bone;
         private Transform _size;
         private Transform _sign;
 
         public void Things(StagePlan plan)
         {
-            plan.Thing(ThingName, atFeet: true);
+            plan.Thing(ThingName, atFeet: true, value: ZoneModel.RestingAmount);
         }
 
         public void Build(GameMaster kit)
@@ -200,7 +198,7 @@ namespace Wirenook.AdventureTools.Editor
             var fx = kit.Fx;
             var thing = kit.Stage[ThingName];
             var effects = GameMaster.EffectsName;
-            GameMasterBuild.Sized(fx, "Pause Size", kit.Path(_size), Size(kit.Prefix), (clip, radius) =>
+            GameMasterBuild.Sized(fx, "Pause Size", kit.Path(_size), thing.Value, (clip, radius) =>
                 clip.Material<SkinnedMeshRenderer>(effects, "_Radius", radius));
 
             var signPath = kit.Path(_sign);
@@ -221,11 +219,10 @@ namespace Wirenook.AdventureTools.Editor
         public void Menu(GameMaster kit)
         {
             var thing = kit.Stage[ThingName];
-            kit.Parameters.Add(FeaturePrefab.SyncedFloat(Size(kit.Prefix), ZoneModel.RestingAmount));
             var folder = kit.Folder("Pause", "pause");
             kit.Stage.MenuNow(FeaturePrefab.Child(folder, "Menu Here"), thing, "Pause here", "pause");
             kit.Stage.MenuShown(FeaturePrefab.Child(folder, "Menu Paused"), thing, "Paused", "pause");
-            FeaturePrefab.MenuRadial(FeaturePrefab.Child(folder, "Menu Size"), "Size", "zone", Size(kit.Prefix));
+            kit.Stage.MenuValue(FeaturePrefab.Child(folder, "Menu Size"), thing, "Size", "zone");
         }
     }
 

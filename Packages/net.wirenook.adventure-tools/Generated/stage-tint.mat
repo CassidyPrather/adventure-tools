@@ -27,10 +27,12 @@ Material:
     m_Floats:
     - _Bit: 16
     - _Dim: 0
+    - _Own: 0
     - _Rim: 0.1
     - _Spare: 128
     - _SpareWhen: 1
     - _Strength: 0.07
     - _WirenookSignature: 0
-    m_Colors: []
+    m_Colors:
+    - _Colour: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

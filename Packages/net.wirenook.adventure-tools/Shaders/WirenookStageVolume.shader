@@ -24,6 +24,8 @@ Shader "Wirenook/Stage Volume"
     Properties
     {
         _WirenookSignature ("Signature colour (a share of a full turn of the hue)", Range(0, 1)) = 0
+        _Colour ("A colour of its own", Color) = (1, 1, 1, 1)
+        _Own ("Use that colour and not the signature colour", Range(0, 1)) = 0
         _Strength ("How much is laid over what is inside", Range(0, 1)) = 0.12
         _Dim ("Lay darkness over it instead of the colour", Range(0, 1)) = 0
         _Rim ("How much the shape's own surface shows, edge on", Range(0, 1)) = 0
@@ -54,6 +56,8 @@ Shader "Wirenook/Stage Volume"
         #include "Packages/net.wirenook.assets/Shaders/WirenookSignature.hlsl"
 
         float _WirenookSignature;
+        float4 _Colour;
+        float _Own;
         float _Strength;
         float _Dim;
         float _Rim;
@@ -91,16 +95,23 @@ Shader "Wirenook/Stage Volume"
             return 0;
         }
 
+        // The wearer's signature colour, unless the material has one of its
+        // own: a zone that is hot is not hot in somebody's favourite blue.
+        float3 tone()
+        {
+            return lerp(wirenookSignatureColour(_WirenookSignature), _Colour.rgb, _Own);
+        }
+
         fixed4 laid(v2f i) : SV_Target
         {
-            float3 colour = lerp(wirenookSignatureColour(_WirenookSignature), float3(0, 0, 0), _Dim);
+            float3 colour = lerp(tone(), float3(0, 0, 0), _Dim);
             return fixed4(colour, _Strength);
         }
 
         fixed4 rim(v2f i) : SV_Target
         {
             float edge = i.edge * i.edge;
-            return fixed4(wirenookSignatureColour(_WirenookSignature), _Rim * edge * edge);
+            return fixed4(tone(), _Rim * edge * edge);
         }
         ENDCG
 
