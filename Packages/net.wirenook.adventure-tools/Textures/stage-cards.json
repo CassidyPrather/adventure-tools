@@ -1,0 +1,12 @@
+{
+  "$comment": "The cards the game master's kit shows on the screens of the people inside something it has set down, in the format of notices.json; tools/notice_atlas.py draws them into stage-card-atlas.png. Card 0 is the pause's.",
+  "columns": 1,
+  "rows": 1,
+  "notices": [
+    {
+      "id": "Paused",
+      "label": "Game\npaused",
+      "icon": "pause"
+    }
+  ]
+}

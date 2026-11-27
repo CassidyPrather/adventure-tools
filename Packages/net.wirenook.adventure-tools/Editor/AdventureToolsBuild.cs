@@ -1,8 +1,6 @@
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using nadena.dev.modular_avatar.core;
-using Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEngine;
 using VRC.Dynamics;
@@ -101,11 +99,6 @@ namespace Wirenook.AdventureTools.Editor
 
         private const string PingParameter = "WN/Ping";
 
-        /// <summary>How long a notice stays up between fading in and out, in seconds.</summary>
-        private const float NoticeSeconds = 3.85f;
-        private const float NoticeFadeIn = 0.25f;
-        private const float NoticeFadeOut = 0.4f;
-
         /// <summary>Checks the placed lights' synced anchors as far as the editor can.</summary>
         [MenuItem("Tools/Wirenook/Adventure Tools/Verify")]
         public static string Verify()
@@ -136,6 +129,7 @@ namespace Wirenook.AdventureTools.Editor
             Bundle(BundleEventPrefab, LaserPingPrefab, MegaphonePrefab, FlashlightPrefab, LanternPrefab, NoticePrefab, BeaconPrefab);
             AssetDatabase.SaveAssets();
             PresenceBuild.Rebuild();
+            GameMasterBuild.Rebuild();
             Debug.Log("[adventure-tools] Rebuilt prefabs and animators.");
         }
 
@@ -594,127 +588,10 @@ namespace Wirenook.AdventureTools.Editor
             return new ParameterConfig { nameOrPrefix = name, syncType = ParameterSyncType.NotSynced, localOnly = true };
         }
 
+        /// <summary>The everyday screen notices; <see cref="Notices"/> builds them, and the set for running a scene.</summary>
         public static void Notice()
         {
-            const string parameter = "WN/Notice";
-            const string cardName = "Card";
-
-            var spec = JObject.Parse(File.ReadAllText(Package + "/Textures/notices.json"));
-            var notices = spec["notices"].Select(token => (id: (string)token["id"], icon: (string)token["icon"])).ToList();
-
-            var material = AssetFolders.LoadOrCreate(Generated + "/notice.mat", () => new Material(Shader.Find("Wirenook/Screen Notice")));
-            material.shader = Shader.Find("Wirenook/Screen Notice");
-            material.SetTexture("_MainTex", AssetDatabase.LoadAssetAtPath<Texture2D>(Package + "/Textures/notice-atlas.png"));
-            material.SetFloat("_Columns", (float)spec["columns"]);
-            material.SetFloat("_Rows", (float)spec["rows"]);
-            material.SetFloat("_Show", 0f);
-            EditorUtility.SetDirty(material);
-
-            var quad = AssetFolders.LoadOrCreate(Generated + "/notice-quad.asset", () => new Mesh());
-            quad.Clear();
-            quad.name = "Notice Quad";
-            quad.vertices = new[] { new Vector3(-0.5f, -0.5f), new Vector3(0.5f, -0.5f), new Vector3(0.5f, 0.5f), new Vector3(-0.5f, 0.5f) };
-            quad.uv = new[] { new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1) };
-            quad.triangles = new[] { 0, 2, 1, 0, 3, 2 };
-            // The shader draws the card in front of the viewer wherever the
-            // avatar is, but Unity only draws meshes whose bounds are in view.
-            // These bounds are as large as VRChat's "Good" rank allows, so the
-            // card shows whenever the avatar is roughly on screen.
-            quad.bounds = new Bounds(Vector3.zero, new Vector3(3.6f, 3.6f, 3.6f));
-            EditorUtility.SetDirty(quad);
-
-            FeaturePrefab.Edit(NoticePrefab, root =>
-            {
-                var card = FeaturePrefab.Child(root, cardName);
-                card.transform.localPosition = new Vector3(0f, 1f, 0f);
-                FeaturePrefab.Ensure<MeshFilter>(card).sharedMesh = quad;
-                var renderer = FeaturePrefab.Ensure<MeshRenderer>(card);
-                renderer.sharedMaterial = material;
-                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                renderer.receiveShadows = false;
-                card.SetActive(false);
-                WirenookSounds.Source(root);
-
-                var fx = ControllerBuilder.Rebuild(Generated + "/notice-fx.controller");
-                fx.Int(parameter);
-                var layer = fx.Layer("Notice");
-                var idle = layer.State("Idle", fx.Clip("notice idle", clip => clip.Active(cardName, false)));
-                var done = layer.State("Done", fx.Clip("notice done", clip => clip.Active(cardName, false)));
-
-                // The wearer's client clears the choice once the card has
-                // played; everyone else just waits for that to sync, so a
-                // notice can never replay on a slow connection.
-                done.Behaviour<VRCAvatarParameterDriver>(driver =>
-                {
-                    driver.localOnly = true;
-                    driver.parameters = new List<VRC_AvatarParameterDriver.Parameter>
-                    {
-                        new VRC_AvatarParameterDriver.Parameter
-                        {
-                            type = VRC_AvatarParameterDriver.ChangeType.Set, name = parameter, value = 0f,
-                        },
-                    };
-                });
-                done.To(idle).Equal(parameter, 0);
-
-                // A card fades in, stays, and fades out, as three states, so
-                // that switching it off (or picking another) can cut the stay
-                // short and go straight to the fade-out. One that is still
-                // fading in finishes that first; a card never just vanishes.
-                AnimationClip Card(string name, int index, AnimationCurve show) => fx.Clip("notice " + name, clip => clip
-                    .Active(cardName, AnimationCurve.Constant(0f, show[show.length - 1].time, 1f))
-                    .Material<MeshRenderer>(cardName, "_Index", AnimationCurve.Constant(0f, show[show.length - 1].time, index))
-                    .Material<MeshRenderer>(cardName, "_Show", show));
-
-                var appearing = new List<StateBuilder>();
-                var leaving = new List<StateBuilder>();
-                for (var i = 0; i < notices.Count; i++)
-                {
-                    var chosen = i + 1;
-                    var id = notices[i].id;
-                    var appear = layer.State(id, Card(id + " appear", i, AnimationCurve.EaseInOut(0f, 0f, NoticeFadeIn, 1f)));
-                    var stay = layer.State(id + " (stay)", Card(id + " stay", i, AnimationCurve.Constant(0f, NoticeSeconds, 1f)));
-                    var leave = layer.State(id + " (leave)", Card(id + " leave", i, AnimationCurve.EaseInOut(0f, 1f, NoticeFadeOut, 0f)));
-                    WirenookSounds.PlayOnEnter(appear, WirenookSounds.SourceName, "chime");
-
-                    idle.To(appear).Equal(parameter, chosen);
-                    appear.To(leave).AfterTime(1f).NotEqual(parameter, chosen);
-                    appear.To(stay).AfterTime(1f);
-                    stay.To(leave).NotEqual(parameter, chosen);
-                    stay.To(leave).AfterTime(1f);
-                    // Still chosen means it ran its full time: clear the choice.
-                    leave.To(done).AfterTime(1f).Equal(parameter, chosen);
-                    leave.To(idle).AfterTime(1f).Equal(parameter, 0);
-                    appearing.Add(appear);
-                    leaving.Add(leave);
-                }
-
-                // Another notice picked meanwhile comes up once this one has gone.
-                for (var from = 0; from < leaving.Count; from++)
-                {
-                    for (var to = 0; to < appearing.Count; to++)
-                    {
-                        if (from != to) leaving[from].To(appearing[to]).AfterTime(1f).Equal(parameter, to + 1);
-                    }
-                }
-
-                fx.Save();
-
-                FeaturePrefab.Merge(root, fx.Controller);
-                FeaturePrefab.Parameters(root, FeaturePrefab.SyncedInt(parameter));
-                FeaturePrefab.InstallMenu(root);
-                FeaturePrefab.MenuFolder(root, "Notice", "notice");
-                for (var i = 0; i < notices.Count; i++)
-                {
-                    var item = FeaturePrefab.Child(root, "Menu " + (i + 1));
-                    FeaturePrefab.MenuToggle(item, notices[i].id, notices[i].icon, parameter, i + 1);
-                }
-
-                // The card is drawn by a shader of this package's own, and mobile
-                // builds may only use VRChat's.
-                FeaturePrefab.Describe(root, "notice", "Screen notices", "notice", "screen notice", 20,
-                    summaryIcon: "megaphone", pcOnly: true);
-            });
+            Notices.Build(Notices.Plain);
         }
 
         /// <summary>How far away the beacon can be seen from, in metres.</summary>

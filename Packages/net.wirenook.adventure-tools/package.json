@@ -3,7 +3,7 @@
   "displayName": "Wirenook Adventure Tools",
   "version": "0.3.0",
   "unity": "2022.3",
-  "description": "Laser pointer, megaphone, a flashlight and lantern (as glowing geometry or a real light) and screen-space notices for VRChat avatars; an invisible switch; and presence, for game masters and spectators: who sees you and who hears you, decided for each viewer.",
+  "description": "Laser pointer, megaphone, a flashlight and lantern (as glowing geometry or a real light) and screen-space notices for VRChat avatars; an invisible switch; presence, for game masters and spectators: who sees you and who hears you, decided for each viewer; and a game master's kit: dice, a pause, zone markers, a pointer, a portal and a skeleton key.",
   "author": {
     "name": "Cassidy Prather",
     "email": "cassidy@wirenook.net",
@@ -15,7 +15,7 @@
     "nadena.dev.modular-avatar": "^1.18.7",
     "net.wirenook.assets": "^0.2.1",
     "net.wirenook.selective-animation": "^0.1.0",
-    "net.wirenook.world-sync": "^0.2.0"
+    "net.wirenook.world-sync": "^0.2.1"
   },
   "url": "https://github.com/CassidyPrather/adventure-tools",
   "documentationUrl": "https://github.com/CassidyPrather/adventure-tools#readme",

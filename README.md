@@ -5,10 +5,12 @@ megaphone, a flashlight, a lantern, and notices that appear on everyone's
 screen. The flashlight and lantern each come in a second build that shines
 a real light and can be left standing in the world.
 
-Also two things for whoever runs a game or watches one: an
-[invisible switch](#the-invisible-switch), and
+Also three things for whoever runs a game or watches one: an
+[invisible switch](#the-invisible-switch);
 [presence](#presence), which decides for each person in the room whether
-they see you and whether they hear you.
+they see you and whether they hear you; and
+[the game master's kit](#the-game-masters-kit): dice, a pause, zone
+markers, a pointer, a portal and a skeleton key.
 
 Package: `net.wirenook.adventure-tools`. Needs the VRChat Avatars SDK 3.10.6
 or newer, [Modular Avatar](https://modular-avatar.nadena.dev/),
@@ -144,6 +146,13 @@ picking another, skips straight to the fade-out; a card that is still
 fading in finishes that first. The cards are drawn from `Textures/notices.json` by
 `tools/notice_atlas.py`; add your own by appending to that list and
 rebuilding.
+
+`Wirenook Notice (Roleplay)` is a second set, for running a scene ("Scene
+starts", "Scene ends", "Roll for initiative", "Your turn", "One at a
+time", "Time passes", "Short break", "Gather round"), from
+`Textures/notices-roleplay.json`. It is called "Say" in the menu and has a
+synced number of its own (`WN/Say`), so an avatar can carry both.
+`Notices.Build` in `Editor/Notices.cs` makes a set from a list.
 
 ### Android and iOS
 
@@ -336,6 +345,258 @@ the spectre looks like in a headset (every other pixel left out may
 shimmer); and everything the circle and the pointer rest on, for which
 selective-animation has a probe to wear.
 
+## The game master's kit
+
+`Wirenook Game Master` is everything for running a scene, behind one
+"Game Master" entry in the menu: dice, a pause, zone markers, a light and
+a laser on the fingertip, a portal with two ends, a skeleton key for
+contacts, and notices for a table. It is one prefab because its parts share
+three things: the stage that everything left in the world stands on, the
+pointer it is aimed with, and two meshes made in code.
+
+Everything it shows is in the wearer's
+[signature colour](https://github.com/CassidyPrather/wirenook-assets), on
+every platform, where the avatar has the dial for one.
+
+| Tool | Menu | What it does | Synced bits |
+| --- | --- | --- | --- |
+| Dice | Dice ▸ | A coin, 1d6, 2d6, 1d20, 2d20, for everyone or in secret. | 21 |
+| Pause | Pause ▸ | A ring dropped where you stand; inside it the room is dimmed and people are told. | 8, and 1 of the stage's |
+| Zones | Zones ▸ | Three spheres to set down, sized by a dial, for everyone or for backstage only. | 27, and 3 of the stage's |
+| Pointer | Pointer ▸ | A light on the index fingertip, and a laser from it. | 3 |
+| Portal | Portal ▸ | A door, and where it leads: a second spot, or you. | 2 of the stage's |
+| Skeleton key | Key ▸ | Sends any one of VRChat's nineteen trait tags, and shows which it feels. PC only. | 9 |
+| Roleplay notices | Say ▸ | Eight cards for a table ("Scene starts", "Roll for initiative", ...). PC only. | 8 |
+| The stage | Clear all | Sets all of the above down in the world, in the same place for everyone. | 58 |
+
+140 synced bits in all, of the 256 an avatar may have. What it costs in
+rank, on PC: one raycast, 20 contacts (all the key's), 15 constraints
+(none deeper than three), one station, three audio sources, two skinned
+meshes with five material slots between them, a trail and the notices'
+card, and about 11,200 triangles, of which half are the shapes only PC
+draws. On Android and iOS it is one skinned mesh in one material, about
+5,600 triangles, one raycast and no contacts. On the `meta` avatar of
+[cass-avatar](https://github.com/CassidyPrather/cass-avatar), with
+presence, flight and a seat as well, that comes to Medium on every
+platform.
+
+### Setting things down
+
+Zones, the pause and both ends of the portal stand in the world, where
+you put them, for everyone, including whoever arrives later. All of them
+ride one anchor bus of
+[world-sync](https://github.com/CassidyPrather/world-sync), which is why
+six things cost the synced bits of one position.
+
+Pick "Aim" for a thing and you alone see it, riding the spot your pointer
+is on: the laser's dot, or a step in front of you when it points at
+nothing. Close the pointing hand into a fist, or press "Set down", and it
+stays. About two seconds later everyone sees it. In between, your client
+measures the spot, the bus reads it out ahead of its turn, and only then
+is the thing switched on, so nobody is ever shown a thing where it used
+to stand. "Shown" switches it off and on again without moving it, and
+"Clear all" takes everything away.
+
+Things stand upright in the world's own axes. The bus syncs no heading,
+so everything here is round.
+
+### Dice
+
+Each roll is a button. Your client draws the numbers and syncs them, so
+everyone is shown the same ones: the total large, each of two dice under
+it, and which dice they were. A coin says HEADS or TAILS.
+
+A roll is shown on a board over your head that reads from in front and
+from behind. With "Roll in secret" on, nobody else is shown it, unless
+"Backstage sees secrets" is on too, and then the people who share the
+backstage circle with you are (see [presence](#presence)). You always
+have a small board of your own in front of your chest, since nobody can
+read a board over their own head. A roll stays up for twenty seconds, or
+until the next, or "Take it down".
+
+A public roll is shown whether or not you are: a game master who is
+narrating unseen can still roll for the table.
+
+### Pause
+
+"Pause here" drops a ring where you stand, sized by its dial (one to
+sixteen metres), with a pause sign turning over the middle and a sound
+from the spot when it starts and when it ends. Everyone sees that much on
+every platform, also with your shaders blocked: it is plain geometry.
+
+On PC the inside of the ring is dimmed as well, and everyone whose eyes
+are inside it gets a card on their screen saying the game is paused, for
+as long as it is. You are not dimmed: the dimming leaves alone whatever
+marks itself as a wirenook avatar (a stencil value its materials write),
+which means other avatars from this family are not dimmed either.
+
+"Paused" ends it.
+
+### Zones
+
+A zone is a sphere, drawn as a ring of dashes on the ground and two
+dashed arches over it, drifting slowly round. On PC it is also what was
+asked for: a dashed line lying on whatever surfaces the sphere's edge
+crosses, floor, walls and furniture alike, and a faint tint on everything
+inside.
+
+That needs no depth texture, which a world may or may not provide, and no
+light on the avatar to force one (a light is a rank). The shader,
+`Wirenook/Stage Volume`, counts in one bit of the stencil buffer the way
+shadow volumes do: a ball gives the tint, and the dashes are a thin shell
+of that ball cut into slices, of which every other one is kept. Three
+bits are used (16, 32 and 64) and each is cleared again by the pass that
+draws.
+
+- Zones that overlap leave the overlap untinted, and dashes that cross
+  cancel where they cross: everything drawn in one go shares one bit.
+- Another shader that leaves those bits set (a world's own stencil
+  effect) shows up as tint.
+
+"Backstage only" shows a zone to you and the people who share the
+backstage circle, and to nobody else.
+
+### Pointer
+
+"Finger light" puts a glow on the last joint of your right index finger,
+with a trail behind it on PC. With "Light when I point" on (it is, to
+start with, and the choice is kept), the pointing gesture lights it too.
+"Laser" adds a beam from the fingertip to a dot on whatever it meets,
+world or player, thirty metres at most. Every viewer's client casts that
+ray for itself from the hand as it sees it, so nothing of it is synced.
+
+The ray runs the way the hand points, not the finger: a fist is how
+things are set down, and a ray along a curled finger would point at your
+palm. All of it is drawn only where you are (see
+[the invisible switch](#the-invisible-switch)).
+
+### Portal
+
+"Aim the door" and set it down: a round gate anyone can click. With
+nothing else set down it leads to you, a step behind wherever you have
+got to, for the player who was left behind. "Aim the way out" sets down a
+second end, and the door leads there instead. The traveller arrives
+standing and lets go by walking. It is one of the six stations an avatar
+may have.
+
+### Skeleton key
+
+A plain key in the left hand. "Send" chooses one of VRChat's nineteen
+[built-in trait tags](https://creators.vrchat.com/common-components/contacts/built-in-contact-tags/)
+(Fire, Hot, Cold, Freezer, Water, Wet, Wind, Damage, DamageBlunt,
+DamageSharp, Weapon, Projectile, Shield, Ammunition, Consumable,
+ConsumableFood, ConsumableDrink, Brush, Dye), and the key's head then
+gives that trait off to whatever it touches: a campfire of
+[`net.wirenook.contacts`](https://github.com/CassidyPrather/contacts),
+somebody's avatar, a world. A stone in the middle of its dial shows the
+family being sent. It sends whether or not you are shown.
+
+It also feels for all nineteen at once. Round the dial is a pip for each,
+in its family's colour, in the order above, starting at the far end of
+the dial and going round towards the fingers; a pip is out while
+something within reach gives that trait off, which is how to find out
+what a thing sends.
+
+A sender's tags cannot be changed while it is worn, so there are nineteen
+senders and one is on. Android and iOS allow eight contacts before an
+avatar is ranked Poor, so mobile builds leave the contacts and the menu
+entry out.
+
+### A kit for one module
+
+The kit is a list of tools, and a game master made for one module is the
+same prefab built with more tools in the list.
+
+```csharp
+GameMasterBuild.Materials();
+Stage.Prepare();
+var tools = GameMasterBuild.Kit();     // dice, pause, zones, pointer, portal, key
+tools.Add(new MyTrap());               // an IStageTool
+GameMasterBuild.Build(prefabPath, controllerPath, meshPrefix, new GameMasterOptions { Tools = tools });
+```
+
+A tool (`IStageTool`) is asked four things in turn, every tool's first
+before any tool's second:
+
+| Step | What it does there |
+| --- | --- |
+| `Things(plan)` | Names what it sets down: `plan.Thing("Trap")`, or `plan.Thing("Alarm", atFeet: true)` for something dropped where the wearer stands. |
+| `Build(kit)` | Makes its objects. `kit.Stage.Hold("Trap", kit.Stage["Trap"])` gives a bone that stands where the thing does and rides the wearer's aim while they place it. `kit.Solid` is the mesh every platform draws (`ShapeMesh`: boxes, rings, bends, balls, slices of a ball, in swatches of the wirenook palette, of which `glow-cyan` and `cyan` follow the signature colour). `kit.Effects` is the PC-only mesh; `kit.Effect(material)` gives a slot in it. |
+| `Layers(kit)` | Adds its layers to `kit.Fx`. `kit.Stage.Show(fx, name, paths, audience)` pops bones in for an audience and keeps the meshes' bounds whole meanwhile. A thing has `Standing` (on show, for a client that knows where), `Mine` (the wearer, while placing it) and `Shown` (either) as audiences, to narrow with `And` (see [selective-animation](https://github.com/CassidyPrather/selective-animation)); `GameMaster.Backstage` is the people backstage and the wearer. |
+| `Menu(kit)` | Adds its parameters to `kit.Parameters` and its folder with `kit.Folder(label, icon)`; `kit.Stage.MenuAim`, `MenuNow`, `MenuShown` and `MenuSet` are the stage's controls for a thing. |
+
+`ZoneTool.Marker(kit, bone)` adds one sphere marker, a metre in radius,
+to both meshes, for a tool that marks a place of its own, and
+`GameMasterBuild.Sized` adds the layer that scales a bone to a dial's
+radius. `ShapeMesh.Vanishing` names a run of shapes as a blendshape that
+gathers them to a point, which is how the dice lose a stroke without a
+bone for every stroke. `Pointer` and `Stage` can also be configured on a
+prefab of your own without the rest.
+
+Both meshes are marked `WirenookApart` (net.wirenook.assets): the
+invisible switch and presence leave them alone, so a hidden game master's
+zones stay. What a tool shows of the wearer's own (the key, the light) it
+narrows with `Presence.DrawnHere` itself.
+
+### What has and has not been checked of the kit
+
+Checked in the editor (`Tools > Wirenook > Adventure Tools > Verify Game Master`),
+by playing the generated animator on a copy of the prefab for the wearer's
+client and one for a viewer's, with parameter drivers carried out, the
+bus's readings worked out and the synced parameters copied across ten
+times a second (world-sync's check does the standing-in):
+
+- **Setting down.** A thing set down with a fist is on show for everyone
+  1.8 s after the click; moved with the menu's button, 2.5 s; the pause,
+  1.9 s. At no moment is a viewer shown a thing anywhere but where it
+  stood before or where it stands now. Someone who arrives afterwards has
+  everything within one round of the bus (5.7 s for six things). The
+  switch takes a thing away and brings it back in place; clearing reaches
+  the viewer.
+- **Dice.** The boards draw the right strokes for all four hundred pairs
+  of two d20, for every single d20, and the right words for each roll.
+  Forty throws of each roll come to numbers that roll can show.
+- **Who is shown what**, for the wearer, someone backstage and a
+  stranger: both dice boards under every combination of the two
+  switches, a zone for backstage only, and the finger light under the
+  switch, the gesture and the wearer not being drawn.
+- **The key.** Each of the nineteen choices switches on its own sender
+  and no other, and each pip follows its trait.
+- **What it carries**: the counts above, and that nothing every platform
+  draws is skinned to a bone mobile builds leave out.
+
+`Assets/Validation/Editor/GameMasterPreview.cs` in cass-avatar renders
+every tool, the shaders included, and each new shader compiles
+(`ShaderProbe`).
+
+Not checked, because only a client can. For each, what to do to find out:
+
+- **Whether the stencil effects draw at all in a client, and in a
+  headset.** Set a zone down on a floor with furniture on it and look for
+  the dashes on the furniture; then stand in it. If there is only the
+  ring and the arches, the volumes are not drawing.
+- **That things arrive where they were put.** Set a zone down at
+  something recognisable, with a friend watching and another joining
+  afterwards. This rests on everything world-sync's bus rests on.
+- **That a raycast's result is in place before constraints read it.** If
+  not, what you aim trails your hand by a frame.
+- **The dice.** Roll 2d20 with a friend watching: that their board shows
+  your numbers, and that the numbers vary. It rests on a parameter driver
+  drawing whole numbers at random between two ends, both included.
+- **The pause's card.** Stand inside with a friend outside: only the one
+  inside should have the card.
+- **The portal.** That a station whose arrival point is far from its
+  collider takes a traveller there, as the catch-up portal of
+  avatar-stations also assumes.
+- **The key.** Hold it to something with a receiver for a trait (the
+  campfire of net.wirenook.contacts takes Fire). That a contact on an
+  object switched on by animation starts to send is how the contact
+  tester of that package works too, and is as untried.
+- **Where the light sits.** It is put on the last joint of the index
+  finger, since rigs do not agree where a fingertip is. How that looks on
+  a hand, and whether the beam leaves from the right place, wants looking
+  at.
+
 ## Limits and unknowns
 
 - Not yet run in the VRChat client. The notice shader has only been
@@ -358,9 +619,21 @@ Everything under `Generated/` and `Prefabs/` is written by
 `Tools > Wirenook > Adventure Tools > Rebuild`
 (`Wirenook.AdventureTools.Editor.AdventureToolsBuild.Rebuild`). The
 invisible switch and presence are `Editor/PresenceBuild.cs`, which that
-calls; `Rebuild Presence` in the same menu does them alone. The models
-come from `blender/` (see `blender/README.md`) and the notice cards from
-`tools/notice_atlas.py`.
+calls; `Rebuild Presence` in the same menu does them alone. The game
+master's kit and the roleplay notices are `Editor/GameMasterBuild.cs`,
+likewise called, with `Rebuild Game Master` to do them alone. The models
+come from `blender/` (see `blender/README.md`); the kit has none, its
+shapes are made in code.
+
+Three tools write what the generators read:
+
+```bash
+python tools/notice_atlas.py     # every set of cards: notices, roleplay notices, the pause's card
+python tools/stage_palette.py    # which swatches of the wirenook palette follow the signature colour
+```
+
+and the kit's sounds (`dice`, `pause`, `resume`) and menu icons are in
+`net.wirenook.assets`, made by its `tools/sfx.py` and `tools/icons.py`.
 
 ## Development
 

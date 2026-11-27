@@ -6,6 +6,7 @@
         "Wirenook.Assets.Editor",
         "nadena.dev.modular-avatar.core",
         "Wirenook.WorldSync.Editor",
+        "Wirenook.WorldSync.Runtime",
         "Wirenook.AdventureTools.Runtime",
         "Wirenook.SelectiveAnimation.Runtime",
         "Wirenook.SelectiveAnimation.Editor"

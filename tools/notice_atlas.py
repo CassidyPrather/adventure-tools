@@ -1,12 +1,19 @@
 #!/usr/bin/env python3
 """Draws the cards the screen notice shows and packs them into one atlas.
 
-    tools/notice_atlas.py
+    tools/notice_atlas.py                 # every set
+    tools/notice_atlas.py notices.json    # one set, by its list
 
-Reads Packages/net.wirenook.adventure-tools/Textures/notices.json and writes
-notice-atlas.png beside it: one card per notice, laid out in a grid. The
-Unity side picks a card by index, so the order in that file is the order of
-the menu; append new notices rather than reordering.
+Reads a list under Packages/net.wirenook.adventure-tools/Textures/ and writes
+its atlas beside it: one card per notice, laid out in a grid. The Unity side
+picks a card by index, so the order in the list is the order of the menu;
+append new notices rather than reordering.
+
+The sets (list -> atlas):
+
+    notices.json           -> notice-atlas.png            the everyday notices
+    notices-roleplay.json  -> notice-roleplay-atlas.png   for running a scene
+    stage-cards.json       -> stage-card-atlas.png        what a pause says to the people inside it
 
 Icons and the lettering face come from the sibling wirenook-assets checkout,
 which sits next to this repo both as a submodule and as a separate clone.
@@ -88,8 +95,15 @@ def card(label: str, icon: str, font: ImageFont.FreeTypeFont) -> Image.Image:
     return image
 
 
-def main() -> int:
-    spec = json.loads((TEXTURES / "notices.json").read_text(encoding="utf-8"))
+SETS = {
+    "notices.json": "notice-atlas.png",
+    "notices-roleplay.json": "notice-roleplay-atlas.png",
+    "stage-cards.json": "stage-card-atlas.png",
+}
+
+
+def build(listing: str) -> None:
+    spec = json.loads((TEXTURES / listing).read_text(encoding="utf-8"))
     columns, rows = spec["columns"], spec["rows"]
     notices = spec["notices"]
     if len(notices) > columns * rows:
@@ -100,9 +114,17 @@ def main() -> int:
     for index, notice in enumerate(notices):
         position = ((index % columns) * CARD[0], (index // columns) * CARD[1])
         atlas.alpha_composite(card(notice["label"], notice["icon"], font), position)
-    out = TEXTURES / "notice-atlas.png"
+    out = TEXTURES / SETS[listing]
     atlas.save(out, optimize=True)
     print(f"notice-atlas: {len(notices)} cards, {atlas.size[0]}x{atlas.size[1]} -> {out}")
+
+
+def main() -> int:
+    wanted = sys.argv[1:] or list(SETS)
+    for listing in wanted:
+        if listing not in SETS:
+            raise SystemExit(f"notice-atlas: no set is listed in {listing!r}; there are {', '.join(SETS)}")
+        build(listing)
     return 0
 
 

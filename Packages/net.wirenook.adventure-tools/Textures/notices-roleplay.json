@@ -1,0 +1,47 @@
+{
+  "$comment": "The notices for running a scene, in menu order: a second set beside notices.json, in the same format, drawn by tools/notice_atlas.py into notice-roleplay-atlas.png. Append new ones: a notice's position is its card index and its synced parameter value.",
+  "columns": 4,
+  "rows": 2,
+  "notices": [
+    {
+      "id": "Scene starts",
+      "label": "Scene\nstarts",
+      "icon": "notice"
+    },
+    {
+      "id": "Scene ends",
+      "label": "Scene\nends",
+      "icon": "away"
+    },
+    {
+      "id": "Initiative",
+      "label": "Roll for\ninitiative",
+      "icon": "dice"
+    },
+    {
+      "id": "Your turn",
+      "label": "Your\nturn",
+      "icon": "target"
+    },
+    {
+      "id": "One at a time",
+      "label": "One at\na time",
+      "icon": "megaphone"
+    },
+    {
+      "id": "Time passes",
+      "label": "Time\npasses",
+      "icon": "nap"
+    },
+    {
+      "id": "Short break",
+      "label": "Short\nbreak",
+      "icon": "seat"
+    },
+    {
+      "id": "Gather round",
+      "label": "Gather\nround",
+      "icon": "teleport-pair"
+    }
+  ]
+}
